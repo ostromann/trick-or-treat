@@ -2,6 +2,9 @@ from random import randint
 import sys
 import pygame
 
+WIDTH, HEIGHT = 1280, 960
+FPS = 60
+
 
 class Tree(pygame.sprite.Sprite):
     def __init__(self, pos, group):
@@ -78,30 +81,39 @@ class CameraGroup(pygame.sprite.Group):
             self.display_surface.blit(sprite.image, offset_pos)
 
 
-pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
+class Game:
+    def __init__(self):
+
+        # general setup
+        pygame.init()
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption('Trick or Treat!')
+        self.clock = pygame.time.Clock()
+
+        # setup
+        self.camera_group = CameraGroup()
+        self.player = Player((640, 360), self.camera_group)
+
+        # Spawn random elements
+        for i in range(20):
+            random_x = randint(0, 2000)
+            random_y = randint(0, 2000)
+            Tree((random_x, random_y), self.camera_group)
+
+    def run(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            self.camera_group.update()
+            self.camera_group.custom_draw(self.player)
+
+            pygame.display.update()
+            self.clock.tick(FPS)
 
 
-# setup
-camera_group = CameraGroup()
-player = Player((640, 360), camera_group)
-
-for i in range(20):
-    random_x = randint(0, 2000)
-    random_y = randint(0, 2000)
-    Tree((random_x, random_y), camera_group)
-
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-    screen.fill('#477861')
-
-    camera_group.update()
-    camera_group.custom_draw(player)
-
-    pygame.display.update()
-    clock.tick(60)
+if __name__ == '__main__':
+    game = Game()
+    game.run()
