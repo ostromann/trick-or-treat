@@ -51,11 +51,11 @@ class Level:
                             Tile((x,y), [self.visible_sprites, self.obstacle_sprites],style, surf)
                             
 
-        self.player = Player((1500, 2200), [self.visible_sprites], self.obstacle_sprites)
+        self.player = Player((1300, 2000), [self.visible_sprites], self.obstacle_sprites)
 
 
     def run(self):
         # update and draw the game
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
-        debug(self.player.direction)
+        debug(self.player.status)
