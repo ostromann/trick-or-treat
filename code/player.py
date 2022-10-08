@@ -20,7 +20,7 @@ class Player(Entity):
 
         # control
         self.attacking = False
-        self.attack_cooldown = 400
+        self.attack_cooldown = 200
         self.attack_time = None
 
         self.obstacle_sprites = obstacle_sprites
@@ -28,7 +28,7 @@ class Player(Entity):
         # weapon
         self.create_attack = create_attack
         self.destroy_weapon = destroy_weapon
-        self.weapon_index = 2
+        self.weapon_index = 0
         self.weapon = list(weapon_data.keys())[self.weapon_index]
         self.switching_weapon = False
         self.weapon_switch_time = None
@@ -54,6 +54,11 @@ class Player(Entity):
         self.energy = self.stats['energy']
         self.exp = 123
         self.speed = self.stats['speed']
+
+        # damage timer
+        self.vulnerable = True
+        self.hit_time = None
+        self.invincibility_cooldown = 500
 
     def import_player_assets(self):
         character_path = 'graphics/player/'
@@ -134,7 +139,7 @@ class Player(Entity):
         current_time = pygame.time.get_ticks()
 
         if self.attacking:
-            if current_time - self.attack_time >= self.attack_cooldown:
+            if current_time - self.attack_time >= self.attack_cooldown + weapon_data[self.weapon]['cooldown']:
                 self.attacking = False
                 self.destroy_weapon()
         
@@ -146,6 +151,11 @@ class Player(Entity):
             if current_time - self.spell_switch_time >= self.spell_switch_cooldown:
                 self.switching_spell = False
 
+        if not self.vulnerable:
+            if current_time - self.hit_time >= self.invincibility_cooldown:
+                self.vulnerable = True
+
+
     def animate(self):
         animation = self.animations[self.status]
 
@@ -156,6 +166,18 @@ class Player(Entity):
         # set the image
         self.image = animation[int(self.frame_index)]
         self.rect = self.image.get_rect(center = self.hitbox.center)
+
+        # flicker
+        if not self.vulnerable:
+            alpha = self.wave_value()
+            self.image.set_alpha(alpha)
+        else:
+            self.image.set_alpha(255)
+
+    def get_full_weapon_damage(self):
+        base_damage = self.stats['attack']
+        weapon_damage = weapon_data[self.weapon]['damage']
+        return base_damage + weapon_damage
 
     def update(self):
         self.input()
