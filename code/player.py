@@ -145,7 +145,8 @@ class Player(pygame.sprite.Sprite):
         animation = self.animations[self.status]
 
         # loop over the frame_index
-        self.frame_index = (self.frame_index + self.animation_speed) % len(animation)
+        self.frame_index += self.animation_speed
+        self.frame_index %= len(animation)
     
 
         # set the image
