@@ -10,12 +10,14 @@ def import_csv_layout(path):
 			terrain_map.append(list(row))
 		return terrain_map
 
-def import_folder(path):
+def import_folder(path, scale = 1):
   surface_list = []
 
   for _,__,img_files in walk(path):
     for image in img_files:
       full_path = path + '/' + image
       image_surf = pygame.image.load(full_path).convert_alpha()
+      if scale != 1:
+        image_surf = pygame.transform.scale(image_surf, (image_surf.get_size()[0]* scale,image_surf.get_size()[1]* scale) )
       surface_list.append(image_surf)
   return surface_list

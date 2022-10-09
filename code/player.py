@@ -10,13 +10,13 @@ class Player(Entity):
     def __init__(self, pos, groups, obstacle_sprites,create_attack,destroy_weapon, create_spell):
         super().__init__(groups)
         self.image = pygame.transform.scale(pygame.image.load(
-            'assets/player_single.png').convert_alpha(), (TILESIZE, TILESIZE))
+            'assets/player_single.png').convert_alpha(), (TILESIZE*2, TILESIZE*2))
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(-6, HITBOX_OFFSET['player'])
 
         # graphics setup
         self.import_player_assets()
-        self.status ='down'
+        self.status ='left'
 
         # control
         self.attacking = False
@@ -79,15 +79,15 @@ class Player(Entity):
         self.weapon_attack_sound.set_volume(0.2)
 
     def import_player_assets(self):
-        character_path = 'graphics/player/'
+        character_path = 'halloween_graphics/player/'
         self.animations = {
-            'up': [], 'down': [], 'left': [], 'right': [],
-            'up_idle': [], 'down_idle': [], 'left_idle': [], 'right_idle': [],
-            'up_attack': [], 'down_attack': [], 'left_attack': [], 'right_attack': [],
+            'left': [], 'right': [],
+            # 'up_idle': [], 'down_idle': [], 'left_idle': [], 'right_idle': [],
+            # 'up_attack': [], 'down_attack': [], 'left_attack': [], 'right_attack': [],
         }
         for animation in self.animations.keys():
             full_path = character_path + animation
-            self.animations[animation] = import_folder(full_path)
+            self.animations[animation] = import_folder(full_path, 2)
 
     def input(self):
         if self.attacking:
@@ -98,10 +98,10 @@ class Player(Entity):
             # movement input
             if keys[pygame.K_w]:
                 self.direction.y = -1
-                self.status = 'up'
+                # self.status = 'up'
             elif keys[pygame.K_s]:
                 self.direction.y = 1
-                self.status = 'down'
+                # self.status = 'down'
             else:
                 self.direction.y = 0
 
@@ -146,13 +146,14 @@ class Player(Entity):
                 self.spell = list(magic_data.keys())[self.spell_index]
 
     def get_status(self):
+        pass
         # idle status
-        if self.direction.magnitude() < 0.1:
-            self.status = self.status.split('_')[0] + '_idle'
+        # if self.direction.magnitude() < 0.1:
+        #     self.status = self.status.split('_')[0] + '_idle'
 
-        # attacking status
-        if self.attacking:
-            self.status = self.status.split('_')[0]  + '_attack'
+        # # attacking status
+        # if self.attacking:
+        #     self.status = self.status.split('_')[0]  + '_attack'
 
     def cooldowns(self):
         current_time = pygame.time.get_ticks()
