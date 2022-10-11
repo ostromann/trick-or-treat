@@ -47,23 +47,32 @@ class Player(Entity):
         self.stats = {
             'health': 100, 
             'energy': 60, 
-            'attack': 10, 
+            'attack': 10,
+            'attack_factor': 1,
             'magic': 4, 
             'speed': 5,
+            'range': 1,
+            'projectile_speed': 1,
             }
         self.max_stats = {
             'health': 300, 
             'energy': 140, 
-            'attack': 20, 
+            'attack': 20,
+            'attack_factor': 2,
             'magic': 10, 
             'speed': 10,
+            'range': 1,
+            'projectile_speed': 1,
             }
         self.upgrade_costs = {
             'health': 100, 
             'energy': 100, 
-            'attack': 100, 
+            'attack': 100,
+            'attack_factor': 100, 
             'magic': 100, 
             'speed': 100,
+            'range': 100,
+            'projectile_speed': 100,
             }
         self.health = self.stats['health']
         self.energy = self.stats['energy']
@@ -201,10 +210,11 @@ class Player(Entity):
         else:
             self.image.set_alpha(255)
 
-    def get_full_weapon_damage(self):
+    def get_full_projectile_damage(self, projectile):
         base_damage = self.stats['attack']
-        weapon_damage = weapon_data[self.weapon]['damage']
-        return base_damage + weapon_damage
+        projectile_damage = projectile.damage * self.stats['attack_factor']
+        # print(f"hit!  {base_damage + projectile_damage} base_dmg: {base_damage}, projectile_dmg: {projectile.damage} * {self.stats['attack_factor']}")
+        return base_damage + projectile_damage
 
     def get_full_magic_damage(self):
         base_damage = self.stats['magic']

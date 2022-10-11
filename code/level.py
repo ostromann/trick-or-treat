@@ -129,7 +129,7 @@ class Level:
                         #         self.animation_player.create_grass_particles(pos-offset, [self.visible_sprites])
                         #     target_sprite.kill()
                         # else:
-                        target_sprite.get_damage(self.player,attack_sprite.sprite_type)
+                        target_sprite.get_damage(self.player,attack_sprite)
                         attack_sprite.hit_sprite(target_sprite)
 
     def projectile_attack_logic(self):
@@ -154,16 +154,13 @@ class Level:
             self.player.hit_time = pygame.time.get_ticks()
             self.animation_player.create_particles(attack_type, self.player.rect.center, [self.visible_sprites])
 
-    
-    # def damage_enemy(self,amount,attack_type):
-    #     if self.player.vulnerable:
-    #         self.player.health -= amount
-    #         self.player.vulnerable = False
-    #         self.player.hit_time = pygame.time.get_ticks()
-    #         self.animation_player.create_particles(attack_type, self.player.rect.center, [self.visible_sprites])
 
     def trigger_death_particles(self,pos,particle_type):
         self.animation_player.create_particles(particle_type,pos,[self.visible_sprites])
+    
+    def trigger_trace_particles(self,pos,particle_type):
+        self.animation_player.create_particles(particle_type,pos,[self.visible_sprites])
+    
 
     def add_exp(self,amount):
         self.player.exp +=amount
@@ -173,7 +170,7 @@ class Level:
 
     def spawn_projectiles(self):
         for i, projectile_name in enumerate(self.player.projectiles):
-            Projectile(projectile_name,(0,0),[self.visible_sprites, self.attack_sprites],i)       
+            Projectile(projectile_name,(0,0),[self.visible_sprites, self.attack_sprites],i,self.trigger_trace_particles)       
 
     def spawn_enemies(self):
         self.enemy_spawn_cooldown()

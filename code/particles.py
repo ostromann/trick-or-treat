@@ -5,6 +5,9 @@ from random import choice
 class AnimationPlayer:
 	def __init__(self):
 		self.frames = {
+			# traces
+			'trace': import_folder('graphics/particles/trace'),
+
 			# magic
 			'flame': import_folder('graphics/particles/flame/frames'),
 			'aura': import_folder('graphics/particles/aura'),
