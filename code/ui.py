@@ -75,11 +75,23 @@ class UI:
     
     self.display_surface.blit(spell_surf, spell_rect)
 
-  def display(self, player):
+  def timer(self,seconds):     
+    text_surf = self.font.render(f'{int(seconds)}', False, TEXT_COLOR)
+    x = self.display_surface.get_size()[0] // 2
+    y = 20
+    text_rect = text_surf.get_rect(midtop = (x,y))
+
+    pygame.draw.rect(self.display_surface, UI_BG_COLOR, text_rect.inflate(20,20))
+    self.display_surface.blit(text_surf, text_rect)
+    pygame.draw.rect(self.display_surface, UI_BORDER_COLOR, text_rect.inflate(20,20),3)
+
+
+  def display(self, player, seconds_left):
     self.show_bar(player.health, player.stats['health'], self.health_bar_rect,HEALTH_COLOR)
     self.show_bar(player.energy, player.stats['energy'], self.energy_bar_rect,ENERGY_COLOR)
 
     self.show_exp(player.exp)
+    self.timer(seconds_left)
 
     self.weapon_overlay(player.weapon_index, player.switching_weapon)
     self.spell_overlay(player.spell_index, player.switching_spell)

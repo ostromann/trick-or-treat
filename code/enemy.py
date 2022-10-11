@@ -31,7 +31,7 @@ class Enemy(Entity):
     self.attack_damage = monster_info['damage']
     self.resistance = monster_info['resistance']
     self.attack_radius = monster_info['attack_radius']
-    self.notice_radius = monster_info['notice_radius']
+    self.notice_radius = monster_info['notice_radius'] * 10
     self.attack_type = monster_info['attack_type']
 
     # player interaction
@@ -131,9 +131,9 @@ class Enemy(Entity):
     if self.vulnerable:
       self.direction = self.get_player_distance_direction(player)[1]
       if attack_type == 'weapon':
-        self.health -= player.get_full_weapon_damage()
+        self.health -= player.get_full_weapon_damage() * 100
       else:
-        self.health -= player.get_full_magic_damage()
+        self.health -= player.get_full_magic_damage() * 100
       # magic damage
       self.vulnerable = False
       self.hit_time = pygame.time.get_ticks()
@@ -149,7 +149,6 @@ class Enemy(Entity):
   def hit_reaction(self):
     if not self.vulnerable:
       self.direction *= -self.resistance
-
 
   def update(self):
     self.hit_reaction()

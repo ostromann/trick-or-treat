@@ -2,12 +2,13 @@ from asyncio import create_subprocess_shell
 from tkinter.ttk import Style
 import pygame
 from entity import Entity
+from projectile import Projectile
 from support import import_folder
 from settings import *
 
 
 class Player(Entity):
-    def __init__(self, pos, groups, obstacle_sprites,create_attack,destroy_weapon, create_spell):
+    def __init__(self, player_name, pos, groups, obstacle_sprites,create_attack,destroy_weapon, create_spell):
         super().__init__(groups)
         self.image = pygame.transform.scale(pygame.image.load(
             'assets/player_single.png').convert_alpha(), (TILESIZE, TILESIZE))
@@ -77,6 +78,13 @@ class Player(Entity):
         # import a sound
         self.weapon_attack_sound = pygame.mixer.Sound('audio/sword.wav')
         self.weapon_attack_sound.set_volume(0.2)
+
+        # projectiles
+        player_info = player_data[player_name]
+        # TODO: Also make health, speed etc. part of this dict from settings
+        self.projectiles = []
+        for projectile_name in player_info['projectiles']:
+            self.projectiles.append(projectile_name)
 
     def import_player_assets(self):
         character_path = 'graphics/player/'
@@ -213,7 +221,7 @@ class Player(Entity):
         if self.energy < self.stats['energy']:
             self.energy += 0.01 * self.stats['magic']
         else:
-            self.energy =  self.stats['energy']
+            self.energy =  self.stats['energy']          
 
     def update(self):
         self.input()
