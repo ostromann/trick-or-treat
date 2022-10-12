@@ -93,8 +93,8 @@ class UI:
     self.show_exp(player.exp)
     self.timer(seconds_left)
 
-    self.weapon_overlay(player.weapon_index, player.switching_weapon)
-    self.spell_overlay(player.spell_index, player.switching_spell)
+    # self.weapon_overlay(player.weapon_index, player.switching_weapon)
+    # self.spell_overlay(player.spell_index, player.switching_spell)
     # self.selection_box(80,635) # magic
     
 

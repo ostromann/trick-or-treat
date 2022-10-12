@@ -17,7 +17,7 @@ class Player(Entity):
 
         # graphics setup
         self.import_player_assets()
-        self.status ='down'
+        self.status ='right'
 
         # control
         self.attacking = False
@@ -98,13 +98,13 @@ class Player(Entity):
     def import_player_assets(self):
         character_path = 'graphics/player/'
         self.animations = {
-            'up': [], 'down': [], 'left': [], 'right': [],
-            'up_idle': [], 'down_idle': [], 'left_idle': [], 'right_idle': [],
-            'up_attack': [], 'down_attack': [], 'left_attack': [], 'right_attack': [],
+            'left': [], 'right': [],
+            'left_idle': [], 'right_idle': [],
+            'left_attack': [], 'right_attack': [],
         }
         for animation in self.animations.keys():
             full_path = character_path + animation
-            self.animations[animation] = import_folder(full_path)
+            self.animations[animation] = import_folder(full_path, scale = 2)
 
     def input(self):
         if self.attacking:
@@ -115,10 +115,8 @@ class Player(Entity):
             # movement input
             if keys[pygame.K_w]:
                 self.direction.y = -1
-                self.status = 'up'
             elif keys[pygame.K_s]:
                 self.direction.y = 1
-                self.status = 'down'
             else:
                 self.direction.y = 0
 
@@ -131,36 +129,36 @@ class Player(Entity):
             else:
                 self.direction.x = 0
             
-            # attack input
-            if keys[pygame.K_SPACE] and not self.attacking:
-                self.attacking = True
-                self.attack_time = pygame.time.get_ticks()
-                self.create_attack()
-                self.weapon_attack_sound.play()
+            # # attack input
+            # if keys[pygame.K_SPACE] and not self.attacking:
+            #     self.attacking = True
+            #     self.attack_time = pygame.time.get_ticks()
+            #     self.create_attack()
+            #     self.weapon_attack_sound.play()
 
-            # magic input
-            if keys[pygame.K_LCTRL] and not self.attacking:
-                self.attacking = True
-                self.attack_time = pygame.time.get_ticks()
-                style = list(magic_data.keys())[self.spell_index]
-                strength = list(magic_data.values())[self.spell_index]['strength'] + self.stats['magic']
-                cost = list(magic_data.values())[self.spell_index]['cost']
+            # # magic input
+            # if keys[pygame.K_LCTRL] and not self.attacking:
+            #     self.attacking = True
+            #     self.attack_time = pygame.time.get_ticks()
+            #     style = list(magic_data.keys())[self.spell_index]
+            #     strength = list(magic_data.values())[self.spell_index]['strength'] + self.stats['magic']
+            #     cost = list(magic_data.values())[self.spell_index]['cost']
 
-                self.create_spell(style, strength, cost)
+            #     self.create_spell(style, strength, cost)
 
-            # Switch weapon
-            if keys[pygame.K_q] and not self.switching_weapon:
-                self.switching_weapon = True
-                self.weapon_switch_time = pygame.time.get_ticks()
-                self.weapon_index = (self.weapon_index + 1) % len(weapon_data)
-                self.weapon = list(weapon_data.keys())[self.weapon_index]
+            # # Switch weapon
+            # if keys[pygame.K_q] and not self.switching_weapon:
+            #     self.switching_weapon = True
+            #     self.weapon_switch_time = pygame.time.get_ticks()
+            #     self.weapon_index = (self.weapon_index + 1) % len(weapon_data)
+            #     self.weapon = list(weapon_data.keys())[self.weapon_index]
 
-            # Switch spell
-            if keys[pygame.K_e] and not self.switching_spell:
-                self.switching_spell = True
-                self.spell_switch_time = pygame.time.get_ticks()
-                self.spell_index = (self.spell_index + 1) % len(magic_data)
-                self.spell = list(magic_data.keys())[self.spell_index]
+            # # Switch spell
+            # if keys[pygame.K_e] and not self.switching_spell:
+            #     self.switching_spell = True
+            #     self.spell_switch_time = pygame.time.get_ticks()
+            #     self.spell_index = (self.spell_index + 1) % len(magic_data)
+            #     self.spell = list(magic_data.keys())[self.spell_index]
 
     def get_status(self):
         # idle status
@@ -231,7 +229,12 @@ class Player(Entity):
         if self.energy < self.stats['energy']:
             self.energy += 0.01 * self.stats['magic']
         else:
-            self.energy =  self.stats['energy']          
+            self.energy =  self.stats['energy']
+
+    def collect(self, sprite):
+        print(f'collected {sprite.amount} exp')
+        self.exp += sprite.amount
+        sprite.kill()
 
     def update(self):
         self.input()

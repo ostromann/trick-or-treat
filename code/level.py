@@ -16,6 +16,7 @@ from magic import MagicPlayer
 from ui import UI
 from upgrade import Upgrade
 from projectile import Projectile
+from collectibles import XP
 
 
 class Level:
@@ -25,6 +26,7 @@ class Level:
         # sprite group setup
         self.visible_sprites = YSortCameraGroup()
         self.obstacle_sprites = pygame.sprite.Group()
+        self.collectible_sprites = pygame.sprite.Group()
 
         # attack sprites
         self.current_attack = None
@@ -44,9 +46,9 @@ class Level:
         self.magic_player = MagicPlayer(self.animation_player)
 
         # enemy spawn settings
-        self.enemy_nr = 10
+        self.enemy_nr = 1
         self.enemy_spawn_interval = 5000
-        self.enemy_spawn_time = None
+        self.enemy_spawn_time = pygame.time.get_ticks()
         self.can_spawn = True
         self.enemies = [] # list of all enemies
 
@@ -146,6 +148,14 @@ class Level:
                             target_sprite.kill()
                         else:
                             target_sprite.get_damage(self.player,attack_sprite.sprite_type)
+    
+    def player_collect_logic(self):
+        if self.collectible_sprites:
+            collision_sprites = pygame.sprite.spritecollide(self.player,self.collectible_sprites, False)
+            if collision_sprites:
+                for target_sprite in collision_sprites:
+                    print(f'collected {target_sprite}')
+                    self.player.collect(target_sprite)
 
     def damage_player(self,amount,attack_type):
         if self.player.vulnerable:
@@ -160,7 +170,9 @@ class Level:
     
     def trigger_trace_particles(self,pos,particle_type):
         self.animation_player.create_particles(particle_type,pos,[self.visible_sprites])
-    
+
+    def trigger_xp_drop(self,pos,amount):
+        XP(pos, [self.visible_sprites, self.collectible_sprites], amount)
 
     def add_exp(self,amount):
         self.player.exp +=amount
@@ -175,20 +187,21 @@ class Level:
     def spawn_enemies(self):
         self.enemy_spawn_cooldown()
         if self.can_spawn:
-            print('spawn enemies!')
+            # print('spawn enemies!')
             for i in range(self.enemy_nr):
-                monster_name = choice(['bamboo', 'spirit',  'squid'])
-                x = randint(20,30) * TILESIZE
-                y = randint(20,30) * TILESIZE
+                monster_name = choice(['cauldron'])
+                x = randint(25,35) * TILESIZE
+                y = randint(15,25) * TILESIZE
 
-                self.enemies.append(Enemy(
+                Enemy(
                     monster_name,
                     (x,y), 
                     [self.visible_sprites, self.attackable_sprites], 
                     self.obstacle_sprites, 
                     self.damage_player,
                     self.trigger_death_particles,
-                    self.add_exp))
+                    self.add_exp,
+                    self.trigger_xp_drop)
             
             self.can_spawn = False
             self.enemy_spawn_time = pygame.time.get_ticks()
@@ -221,5 +234,6 @@ class Level:
             self.visible_sprites.enemy_update(self.player)
             self.visible_sprites.projectile_update(self.player)
             self.player_attack_logic()
+            self.player_collect_logic()
         
         debug(self.player.projectiles)

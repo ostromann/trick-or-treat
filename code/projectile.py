@@ -192,7 +192,6 @@ class Projectile(pygame.sprite.Sprite):
     self.animate()
     self.cooldowns()
 
-
   def projectile_update(self, player, enemies):
     # TODO: Check why there is a delay at the beginning of the round
     self.get_status(player, enemies)
