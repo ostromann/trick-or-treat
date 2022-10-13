@@ -6,11 +6,14 @@ class UI:
     
     # general
     self.display_surface = pygame.display.get_surface()
+    self.display_w, self.display_h = self.display_surface.get_size()
     self.font = pygame.font.Font(UI_FONT, UI_FONT_SIZE)
 
     # bar setup
     self.health_bar_rect = pygame.Rect(10,10,HEALTH_BAR_WIDTH,BAR_HEIGHT)
     self.energy_bar_rect = pygame.Rect(10,34,ENERGY_BAR_WIDTH,BAR_HEIGHT)
+    self.exp_bar_rect = pygame.Rect(0,self.display_h - 20, self.display_w, 20)
+    self.bar_overlay = pygame.image.load('graphics/misc/bar_alpha.png').convert_alpha()
 
     # convert weapon dictionary
     self.weapon_graphics = []
@@ -39,7 +42,10 @@ class UI:
     current_rect.width = current_width
 
     pygame.draw.rect(self.display_surface, color, current_rect)
-    pygame.draw.rect(self.display_surface, UI_BORDER_COLOR, bg_rect, 3)
+
+    self.display_surface.blit(pygame.transform.scale(self.bar_overlay,bg_rect.size),bg_rect)
+
+    # pygame.draw.rect(self.display_surface, UI_BORDER_COLOR, bg_rect, 3)
 
   def show_exp(self, exp):
     text_surf = self.font.render(f'{int(exp)} XP', False, TEXT_COLOR)
@@ -75,14 +81,27 @@ class UI:
     
     self.display_surface.blit(spell_surf, spell_rect)
 
-  def display(self, player):
+  def timer(self,seconds):     
+    text_surf = self.font.render(f'{int(seconds)}', False, TEXT_COLOR)
+    x = self.display_surface.get_size()[0] // 2
+    y = 20
+    text_rect = text_surf.get_rect(midtop = (x,y))
+
+    pygame.draw.rect(self.display_surface, UI_BG_COLOR, text_rect.inflate(20,20))
+    self.display_surface.blit(text_surf, text_rect)
+    pygame.draw.rect(self.display_surface, UI_BORDER_COLOR, text_rect.inflate(20,20),4)
+
+
+  def display(self, player, seconds_left):
     self.show_bar(player.health, player.stats['health'], self.health_bar_rect,HEALTH_COLOR)
-    self.show_bar(player.energy, player.stats['energy'], self.energy_bar_rect,ENERGY_COLOR)
+    # self.show_bar(player.energy, player.stats['energy'], self.energy_bar_rect,ENERGY_COLOR)
+    self.show_bar(player.exp, 20, self.exp_bar_rect,EXP_COLOR)
 
-    self.show_exp(player.exp)
+    # self.show_exp(player.exp)
+    self.timer(seconds_left)
 
-    self.weapon_overlay(player.weapon_index, player.switching_weapon)
-    self.spell_overlay(player.spell_index, player.switching_spell)
+    # self.weapon_overlay(player.weapon_index, player.switching_weapon)
+    # self.spell_overlay(player.spell_index, player.switching_spell)
     # self.selection_box(80,635) # magic
     
 

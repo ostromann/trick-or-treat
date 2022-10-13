@@ -5,6 +5,9 @@ from random import choice
 class AnimationPlayer:
 	def __init__(self):
 		self.frames = {
+			# traces
+			'trace': import_folder('graphics/particles/trace'),
+
 			# magic
 			'flame': import_folder('graphics/particles/flame/frames'),
 			'aura': import_folder('graphics/particles/aura'),
@@ -22,6 +25,7 @@ class AnimationPlayer:
 			'raccoon': import_folder('graphics/particles/raccoon'),
 			'spirit': import_folder('graphics/particles/nova'),
 			'bamboo': import_folder('graphics/particles/bamboo'),
+			'cauldron': import_folder('graphics/particles/smoke_orange'),
 			
 			# leafs 
 			'leaf': (

@@ -6,7 +6,7 @@ from settings import *
 from support import *
 
 class Enemy(Entity):
-  def __init__(self,monster_name,pos,groups,obstacle_sprites, damage_player, trigger_death_particles, add_exp):
+  def __init__(self,monster_name,pos,groups,obstacle_sprites, damage_player, trigger_death_particles, add_exp, trigger_exp_drop):
     
     #general setup
     super().__init__(groups)
@@ -31,7 +31,7 @@ class Enemy(Entity):
     self.attack_damage = monster_info['damage']
     self.resistance = monster_info['resistance']
     self.attack_radius = monster_info['attack_radius']
-    self.notice_radius = monster_info['notice_radius']
+    self.notice_radius = monster_info['notice_radius'] * 10
     self.attack_type = monster_info['attack_type']
 
     # player interaction
@@ -41,6 +41,7 @@ class Enemy(Entity):
     self.damage_player = damage_player
     self.trigger_death_particles = trigger_death_particles
     self.add_exp = add_exp
+    self.trigger_exp_drop = trigger_exp_drop
 
     # invincibility timer
     self.vulnerable = True
@@ -51,9 +52,9 @@ class Enemy(Entity):
     self.death_sound = pygame.mixer.Sound('audio/death.wav')
     self.hit_sound = pygame.mixer.Sound('audio/hit.wav')
     self.attack_sound = pygame.mixer.Sound(monster_info['attack_sound'])
-    self.death_sound.set_volume(0.3)
-    self.hit_sound.set_volume(0.3)
-    self.attack_sound.set_volume(0.3)
+    self.death_sound.set_volume(0)#0.3)
+    self.hit_sound.set_volume(0)#0.3)
+    self.attack_sound.set_volume(0)#0.3)
 
 
   def import_graphics(self,name):
@@ -127,11 +128,11 @@ class Enemy(Entity):
       if current_time - self.hit_time >= self.invincibility_cooldown:
           self.vulnerable = True
 
-  def get_damage(self, player, attack_type):
+  def get_damage(self, player, attack_sprite):
     if self.vulnerable:
       self.direction = self.get_player_distance_direction(player)[1]
-      if attack_type == 'weapon':
-        self.health -= player.get_full_weapon_damage()
+      if attack_sprite.sprite_type == 'projectile':
+        self.health -= player.get_full_projectile_damage(attack_sprite)
       else:
         self.health -= player.get_full_magic_damage()
       # magic damage
@@ -143,13 +144,13 @@ class Enemy(Entity):
     if self.health <= 0:
       self.kill()
       self.trigger_death_particles(self.rect.center,self.monster_name)
-      self.add_exp(self.exp)
+      # self.add_exp(self.exp)
       self.death_sound.play()
+      self.trigger_exp_drop(self.rect.center,self.exp)
 
   def hit_reaction(self):
     if not self.vulnerable:
       self.direction *= -self.resistance
-
 
   def update(self):
     self.hit_reaction()
