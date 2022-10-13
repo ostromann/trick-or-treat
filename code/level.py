@@ -46,7 +46,7 @@ class Level:
         self.magic_player = MagicPlayer(self.animation_player)
 
         # enemy spawn settings
-        self.enemy_nr = 1
+        self.enemy_nr = 15
         self.enemy_spawn_interval = 5000
         self.enemy_spawn_time = pygame.time.get_ticks()
         self.can_spawn = True
