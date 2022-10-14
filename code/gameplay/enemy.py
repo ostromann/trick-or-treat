@@ -1,9 +1,9 @@
 from audioop import add
 import pygame
 
-from entity import Entity
+from gameplay.support import *
+from gameplay.entity import Entity
 from settings import *
-from support import *
 
 class Enemy(Entity):
   def __init__(self,monster_name,pos,groups,obstacle_sprites, damage_player, trigger_death_particles, add_exp, trigger_exp_drop):
@@ -19,7 +19,7 @@ class Enemy(Entity):
 
     # movement
     self.rect = self.image.get_rect(topleft = pos)
-    self.hitbox = self.rect.inflate(0,-10)
+    self.pos = pygame.math.Vector2(self.rect.center)
     self.obstacle_sprites = obstacle_sprites
 
     # stats
@@ -97,26 +97,6 @@ class Enemy(Entity):
     else:
       self.direction = pygame.math.Vector2()
 
-  def animate(self):
-    animation = self.animations[self.status]
-
-    # loop over the frame_index
-    self.frame_index += self.animation_speed
-    if self.frame_index >= len(animation):
-      if self.status == 'attack':
-        self.can_attack = False
-      self.frame_index = 0
-
-    # set the image
-    self.image = animation[int(self.frame_index)]
-    self.rect = self.image.get_rect(center = self.hitbox.center)
-
-    if not self.vulnerable:
-      alpha = self.wave_value()
-      self.image.set_alpha(alpha)
-    else:
-      self.image.set_alpha(255)
-
   def cooldowns(self):
     current_time = pygame.time.get_ticks()
 
@@ -152,10 +132,10 @@ class Enemy(Entity):
     if not self.vulnerable:
       self.direction *= -self.resistance
 
-  def update(self):
+  def update(self, dt, actions):
     self.hit_reaction()
-    self.move(self.speed)
-    self.animate()
+    # self.move(dt,self.speed)
+    self.animate(dt)
     self.cooldowns()
     self.check_death()
 

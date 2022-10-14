@@ -1,5 +1,5 @@
 import pygame
-from support import *
+from gameplay.support import *
 
 class Collectible(pygame.sprite.Sprite):
   def __init__(self, groups):
@@ -42,5 +42,5 @@ class XP(Collectible):
     self.image = animation[int(self.frame_index)]
     self.rect = self.image.get_rect(center = self.hitbox.center)
 
-  def update(self):
+  def update(self,dt,actions):
     self.animate()

@@ -1,9 +1,11 @@
 from tkinter.tix import TEXT
 import pygame
+from states.state import State
 from settings import *
 
-class Upgrade:
-  def __init__(self,player):
+class UpgradeMenu(State):
+  def __init__(self,game,player):
+    State.__init__(self,game)
     # general setup
     self.display_surface = pygame.display.get_surface()
     self.player = player
@@ -63,8 +65,10 @@ class Upgrade:
       item = Item(left,top,self.width, self.height, i,self.font)
       self.item_list.append(item)
 
+  def update(self,delta_time, actions):
+    pass
 
-  def display(self):
+  def render(self):
     self.input()
     self.selection_cooldown()
     for index, item in enumerate(self.item_list):

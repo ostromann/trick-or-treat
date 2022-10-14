@@ -31,15 +31,18 @@ class YSortCameraGroup(pygame.sprite.Group):
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
+            outline_rect = pygame.Rect(offset_pos[0],offset_pos[1],sprite.rect.width, sprite.rect.height)
+            pygame.draw.rect(self.display_surface,(255,0,0),outline_rect,2)
+
 
     def enemy_update(self,player):
         enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, 'sprite_type') if sprite.sprite_type == 'enemy']
         for sprite in enemy_sprites:
             sprite.enemy_update(player)
 
-    def projectile_update(self,player):
+    def projectile_update(self,player,dt,actions):
         projectile_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, 'sprite_type') if sprite.sprite_type == 'projectile']
         enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, 'sprite_type') if sprite.sprite_type == 'enemy']
         for sprite in projectile_sprites:
-            sprite.projectile_update(player,enemy_sprites)
+            sprite.projectile_update(player,enemy_sprites,dt,actions)
 

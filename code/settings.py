@@ -38,7 +38,7 @@ UPGRADE_BG_COLOR_SELECTED = '#EEEEEE'
 
 # player data
 player_data = {
-	'normalo': {'health': 100, 'energy': 60, 'attack': 10, 'magic': 4, 'speed': 5,'projectiles': ['candy','popcorn','candy','popcorn','candy','popcorn']},
+	'normalo': {'health': 100, 'energy': 60, 'attack': 10, 'magic': 4, 'speed': 5,'projectiles': ['candy','popcorn']},
 }
 
 # weapons
@@ -64,6 +64,6 @@ monster_data = {
 
 # projectiles
 projectile_data = {
-	'candy': {'damage': 50, 'attack_type': 'slug', 'attack_sound': 'audio/attack/slash.wav', 'speed': 20, 'return_speed': 10, 'range': 400, 'cooldown': 300},
-	'popcorn': {'damage': 50, 'attack_type': 'slug', 'attack_sound': 'audio/attack/claw.wav', 'speed': 15, 'return_speed': 10, 'range': 600, 'cooldown': 600},
+	'candy': {'damage': 50, 'attack_type': 'slug', 'attack_sound': 'audio/attack/slash.wav', 'speed': 20, 'return_speed': 10, 'range': 300, 'cooldown': 300},
+	'popcorn': {'damage': 50, 'attack_type': 'slug', 'attack_sound': 'audio/attack/claw.wav', 'speed': 15, 'return_speed': 10, 'range': 300, 'cooldown': 600},
 }

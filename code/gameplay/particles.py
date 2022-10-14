@@ -1,5 +1,5 @@
 import pygame
-from support import import_folder
+from gameplay.support import import_folder
 from random import choice
 
 class AnimationPlayer:
@@ -76,5 +76,5 @@ class ParticleEffet(pygame.sprite.Sprite):
 		else:
 			self.image = self.frames[int(self.frame_index)]
 	
-	def update(self):
+	def update(self,dt,actions):
 		self.animate()

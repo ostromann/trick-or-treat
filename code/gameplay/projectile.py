@@ -1,29 +1,30 @@
 import pygame
-from settings import *
-from support import *
 from math import sin, cos, pi
 
-class Projectile(pygame.sprite.Sprite):
+from settings import *
+from gameplay.support import *
+from gameplay.entity import Entity
+
+class Projectile(Entity):
   def __init__(self, projectile_name, pos, groups, index, trigger_trace_particles):#, damage_enemy):# trigger_impact_particles)
 
     #general setup
     super().__init__(groups)
     self.sprite_type = 'projectile'
 
-    self.frame_index = 0
-    self.animation_speed = 0.15
-
     # graphics setup
     self.import_graphics(projectile_name)
     self.status = 'idle'
     self.image = self.animations[self.status][self.frame_index]
+    self.frame_index = 0
+    self.animation_speed = 0.15
 
     # Particle setup
     self.trigger_trace_particles = trigger_trace_particles
 
     # movement
     self.rect = self.image.get_rect(topleft = pos)
-    self.hitbox = self.rect.inflate(0,-10)
+    self.pos = pygame.math.Vector2(self.rect.center)
 
     # stats
     self.index = index # index to keep track of position in queue
@@ -41,11 +42,6 @@ class Projectile(pygame.sprite.Sprite):
 
     # enemy interaction
     self.can_attack = True
-    self.attack_time = None
-    self.attack_cooldown = 400
-    self.target_enemy = None
-    # self.damage_enemy = damage_enemy
-    # self.trigger_impact_particles = trigger_impact_particles
 
     # sounds
     self.attack_sound = pygame.mixer.Sound(projectile_info['attack_sound'])
@@ -86,16 +82,8 @@ class Projectile(pygame.sprite.Sprite):
     return distance, direction, closest_sprite
 
 
-  def animate(self):
-    animation = self.animations[self.status]
-
-    # loop over the frame_index
-    self.frame_index += self.animation_speed
-    self.frame_index %= len(animation)
-
-    # set the image
-    self.image = animation[int(self.frame_index)]
-    self.rect = self.image.get_rect(center = self.hitbox.center)
+  def flicker(self):
+    pass
   
   def cooldowns(self):
     '''
@@ -117,12 +105,13 @@ class Projectile(pygame.sprite.Sprite):
     x = x_amplitude * sin((pygame.time.get_ticks()/500 + phase_shift))
     y = y_amplitude * cos((pygame.time.get_ticks()/500 + phase_shift))
 
-    self.hitbox.x = player.rect.centerx + x - 12
-    self.hitbox.y = player.rect.centery + y
+    self.pos.x = player.rect.centerx + x
+    self.pos.y = player.rect.centery + y
 
-    self.rect.center = self.hitbox.center
+    self.rect.centerx = round(self.pos.x)
+    self.rect.centery = round(self.pos.y)
 
-  def move_to_sprite(self, target_sprite, player, returning):
+  def move_to_sprite(self, target_sprite, player, returning, dt):
     '''
     Projectile moves towards target sprite.
     Boolean for return speed
@@ -132,12 +121,11 @@ class Projectile(pygame.sprite.Sprite):
     if direction.magnitude() != 0:
         direction = direction.normalize()
 
-    self.hitbox.x += direction.x * speed * player.stats['projectile_speed']
-    self.hitbox.y += direction.y * speed * player.stats['projectile_speed']
-    
-    self.rect.center = self.hitbox.center
-    # TODO: These particles are super slow. not good
-    # self.trigger_trace_particles(self.rect.center,'trace')
+    self.pos.x  += direction.x * speed * player.stats['projectile_speed'] * dt * 60
+    self.pos.y += direction.y * speed * player.stats['projectile_speed'] * dt * 60
+
+    self.rect.centerx = round(self.pos.x)
+    self.rect.centery = round(self.pos.y)
 
   def hit_sprite(self,sprite):
     # TODO: potentially check if it is the right target enemy
@@ -146,7 +134,7 @@ class Projectile(pygame.sprite.Sprite):
     self.status = 'return'
 
   def get_status(self, player, enemies):
-
+    
     # projectile is returning (first set on hit_sprite())
     if self.status == 'return':
       distance, _ = self.get_distance_direction_to_sprite(player)
@@ -161,6 +149,7 @@ class Projectile(pygame.sprite.Sprite):
       # projectile is ready to attack (cooldown over)
       if self.can_attack and len(enemies) > 0:
         distance, _, closest_enemy = self.get_closest_sprite_from_list(enemies)
+        print(distance)
 
         # enemy is within distance
         if distance <= self.range * player.stats['range']:
@@ -171,7 +160,9 @@ class Projectile(pygame.sprite.Sprite):
     elif self.status == 'attack':
       self.status = 'attack'
     
-  def actions(self, player):
+    print(self.index,self.status, self.can_attack)
+    
+  def actions(self, player, dt):
     # This is necessary because target enemy might disappear before actions are called!
     if self.target_enemy:
       if len(self.target_enemy.groups()) < 2:
@@ -181,19 +172,19 @@ class Projectile(pygame.sprite.Sprite):
     if self.status == 'attack':    
       # self.attack_sound.play()
       self.attack_time = pygame.time.get_ticks()
-      self.move_to_sprite(self.target_enemy, player, False)
+      self.move_to_sprite(self.target_enemy, player, False, dt)
 
     elif self.status == 'idle':
       self.queue_at_player(player)
     elif self.status == 'return':
-      self.move_to_sprite(player, player, True)
+      self.move_to_sprite(player, player, True, dt)
 
-  def update(self):
-    self.animate()
+  def update(self, dt, actions):
+    self.animate(dt)
     self.cooldowns()
 
-  def projectile_update(self, player, enemies):
+  def projectile_update(self, player, enemies, dt, actions):
     # TODO: Check why there is a delay at the beginning of the round
     self.get_status(player, enemies)
-    self.actions(player)
+    self.actions(player, dt)
 
