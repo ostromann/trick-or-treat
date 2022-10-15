@@ -21,6 +21,8 @@ class Game_World(State):
     def __init__(self, game):
         State.__init__(self,game)
 
+        self.cumulative_dt = 0
+
         # sprite group setup
         self.visible_sprites = YSortCameraGroup()
         self.obstacle_sprites = pygame.sprite.Group()
@@ -44,9 +46,9 @@ class Game_World(State):
         self.magic_player = MagicPlayer(self.animation_player)
 
         # enemy spawn settings
-        self.enemy_nr = 15
+        self.enemy_nr = 64
         self.enemy_spawn_interval = 5000
-        self.enemy_spawn_waves = 1
+        self.enemy_spawn_waves = 5
         self.enemy_waves_spawned = 0
         self.enemy_spawn_time = pygame.time.get_ticks()
         self.can_spawn = True
@@ -115,7 +117,6 @@ class Game_World(State):
             collision_sprites = pygame.sprite.spritecollide(self.player,self.collectible_sprites, False)
             if collision_sprites:
                 for target_sprite in collision_sprites:
-                    print(f'collected {target_sprite}')
                     self.player.collect(target_sprite)
 
     def damage_player(self,amount,attack_type):
@@ -141,13 +142,12 @@ class Game_World(State):
         self.game_paused = not self.game_paused
 
     def spawn_projectiles(self):
-        for i, projectile_name in enumerate(self.player.projectiles):
-            Projectile(projectile_name,(0,0),[self.visible_sprites, self.attack_sprites],i,self.trigger_trace_particles)       
+        for index, projectile_name in enumerate(self.player.projectiles):
+            Projectile(projectile_name,[self.visible_sprites, self.attack_sprites],index,self.player,self.attackable_sprites)       
 
     def spawn_enemies(self):
         self.enemy_spawn_cooldown()
         if self.can_spawn:
-            # print('spawn enemies!')
             for i in range(self.enemy_nr):
                 monster_name = choice(['cauldron'])
                 x = randint(25,35) * TILESIZE
@@ -178,7 +178,8 @@ class Game_World(State):
         current_duration = current_time - self.level_start_time
         self.seconds_left = (self.level_duration - current_duration) / 1000
 
-    def update(self,dt, actions):
+    def update(self,dt,actions):
+        self.cumulative_dt += dt
         self.timer()
         # Check if the game was paused 
         if actions["start"]:
@@ -189,7 +190,7 @@ class Game_World(State):
             self.enemy_waves_spawned += 1
         self.visible_sprites.update(dt, actions)
         self.visible_sprites.enemy_update(self.player)
-        self.visible_sprites.projectile_update(self.player,dt,actions)
+        self.visible_sprites.projectile_update(dt,self.cumulative_dt,actions)
         self.player_attack_logic()
         self.player_collect_logic()
       

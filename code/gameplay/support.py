@@ -21,3 +21,29 @@ def import_folder(path, scale = None):
         image_surf = pygame.transform.scale(image_surf, (128,128))
       surface_list.append(image_surf)
   return surface_list
+
+def get_distance_direction_a_to_b(a, b):
+  '''
+  Get distance and direction from vector a to vector b.
+  '''
+  a = pygame.math.Vector2(a)
+  b = pygame.math.Vector2(b)
+  distance = (a - b).magnitude()
+
+  if distance > 0:
+    direction = (a - b).normalize()
+  else:
+    direction = pygame.math.Vector2()
+  return (distance,direction)
+
+def get_closest_sprite_of_group(sprite,group):
+  '''
+  Get the closest sprite from a group of sprites
+  '''
+  dist_sprites = [] # list of distances and sprites
+  for other_sprite in group:
+    distance, _ = get_distance_direction_a_to_b(sprite.pos, other_sprite.pos)
+    dist_sprites.append((distance,other_sprite))
+
+  return sorted(dist_sprites, key=lambda x: x[0])[0][1]
+

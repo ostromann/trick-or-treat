@@ -16,7 +16,8 @@ class Player(Entity):
         # movement
         self.rect = self.image.get_rect(topleft=pos)
         self.pos = pygame.math.Vector2(self.rect.center)
-        self.obstacle_sprites = obstacle_sprites       
+        self.obstacle_sprites = obstacle_sprites    
+        print(self.pos)   
 
         # control
         self.attacking = False
@@ -32,6 +33,7 @@ class Player(Entity):
             'speed': 10,
             'range': 1,
             'projectile_speed': 1,
+            'projectile_queuing_radius': 50,
             }
         self.max_stats = {
             'health': 300, 
@@ -41,6 +43,7 @@ class Player(Entity):
             'speed': 10,
             'range': 1,
             'projectile_speed': 1,
+            'projectile_queuing_radius': 200,
             }
         self.upgrade_costs = {
             'health': 100, 
@@ -50,6 +53,7 @@ class Player(Entity):
             'speed': 100,
             'range': 100,
             'projectile_speed': 100,
+            'projectile_queuing_radius': 100,
             }
         self.health = self.stats['health']
         self.exp = 0

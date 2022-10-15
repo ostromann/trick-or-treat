@@ -12,14 +12,14 @@ class Game():
             self.screen = pygame.display.set_mode((self.SCREEN_WIDTH,self.SCREEN_HEIGHT))
             self.running, self.playing = True, True
             self.actions = {"left": False, "right": False, "up" : False, "down" : False, "action1" : False, "action2" : False, "start" : False}
-            self.dt, self.prev_time = 0, 0
+            self.dt, self.prev_time, self.cumulative_dt = 0, 0, 0
             self.state_stack = []
             self.load_assets()
             self.load_states()
 
         def game_loop(self):
             while self.playing:
-                # time.sleep(0.01)
+                time.sleep(0.01)
                 self.get_dt()
                 self.get_events()
                 self.update()

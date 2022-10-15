@@ -4,187 +4,182 @@ from math import sin, cos, pi
 from settings import *
 from gameplay.support import *
 from gameplay.entity import Entity
+from gameplay.entity_fsm import EntityFSM, State, TimedState
+
+class CooldownState(TimedState):
+  def cleanup(self,sprite):
+    pass
+  
+  def update(self,sprite,dt,actions):
+    sprite.target_pos = sprite.get_queuing_pos()
+    self.check_expiry()
+    # print(f'{self.name}: {self.time_remaining} ms remaining...')
+    
+    pass
+
+class ReadyState(State):
+  def update(self,sprite,dt,actions):
+    sprite.target_pos = sprite.get_queuing_pos()
+    if len(sprite.attackable_sprites) > 0:
+      self.check_done(sprite)
+
+  def check_done(self,sprite):
+    closest_enemy = get_closest_sprite_of_group(sprite, sprite.attackable_sprites)
+    distance, _ = get_distance_direction_a_to_b(sprite.pos, closest_enemy.pos)
+
+    if distance < sprite.range:
+      self.done = True
+      # print(f'{self.name}: Update: Enemy in sight. State done!')
+
+class AttackState(State):
+  def startup(self,sprite):
+    sprite.has_hit_sprite = False
+    sprite.speed = sprite.attack_speed
+    if len(sprite.attackable_sprites) > 0:
+      closest_enemy = get_closest_sprite_of_group(sprite, sprite.attackable_sprites)
+      sprite.target_pos = closest_enemy.pos
+    else:
+      # print(f'{self.nane}: No attackable sprites!')
+      self.done = True
+
+  def update(self,sprite,dt,actions):
+    if not self.done:
+      self.check_done(sprite)
+
+  def cleanup(self, sprite):
+    sprite.has_hit_sprite = False
+    
+
+  def check_done(self, sprite):
+    self.done = sprite.has_hit_sprite or self.max_distance_reached(sprite) or self.target_position_reached(sprite)
+    
+  def max_distance_reached(self, sprite):
+    distance, _ = get_distance_direction_a_to_b(sprite.pos, sprite.player.pos)
+    margin = 50 #diamaeter of the players projectile queuing radius
+    if distance >= sprite.range + margin:
+      # print(f'{self.name}: sprite has travelled far enough!')
+      return True
+    return False
+
+  def target_position_reached(self, sprite):
+    distance, _ = get_distance_direction_a_to_b(sprite.pos, sprite.target_pos)
+    margin = 0.01
+    if distance <= margin:
+      return True
+    return False
+
+
+      
+class ReturnState(State):
+  def startup(self,sprite):
+    sprite.speed = sprite.return_speed
+    
+  def update(self,sprite,dt,actions):
+    #sprite.target_pos = sprite.get_queuing_pos()
+    sprite.target_pos = sprite.player.pos
+    self.check_done(sprite)
+      
+  def check_done(self, sprite):
+    # check if projectile has reached player
+    distance, _ = get_distance_direction_a_to_b(sprite.pos, sprite.player.pos)
+
+    margin = 50 #diamaeter of the players projectile queuing radius
+    if distance <= margin:
+      self.done = True
+
+##===================================
 
 class Projectile(Entity):
-  def __init__(self, projectile_name, pos, groups, index, trigger_trace_particles):#, damage_enemy):# trigger_impact_particles)
+  def __init__(self, projectile_name, groups, index, player, attackable_sprites):#, damage_enemy):# trigger_impact_particles)
 
     #general setup
     super().__init__(groups)
     self.sprite_type = 'projectile'
+    self.index = index # index to keep track of position in queue
+    self.attackable_sprites = attackable_sprites
+    self.player = player # player this projectile belongs to
 
     # graphics setup
     self.import_graphics(projectile_name)
-    self.status = 'idle'
+    self.status = 'ready'
     self.image = self.animations[self.status][self.frame_index]
     self.frame_index = 0
     self.animation_speed = 0.15
 
-    # Particle setup
-    self.trigger_trace_particles = trigger_trace_particles
-
     # movement
-    self.rect = self.image.get_rect(topleft = pos)
+    self.dt_cumulative = 0
+    self.rect = self.image.get_rect(topleft = self.get_queuing_pos())
     self.pos = pygame.math.Vector2(self.rect.center)
+    self.target_pos = self.pos
 
     # stats
-    self.index = index # index to keep track of position in queue
     self.projectile_name = projectile_name
     projectile_info = projectile_data[self.projectile_name]
-    self.speed = projectile_info['speed']
+    self.attack_speed = projectile_info['speed']
+    self.speed = self.attack_speed
     self.return_speed = projectile_info['return_speed']
     self.damage = projectile_info['damage']
     self.range = projectile_info['range']
     self.attack_type = projectile_info['attack_type']
 
-    # timing
-    self.return_time = None
-    self.return_cooldown = 300
+    # FSM setup
+    self.fsm = EntityFSM(self, index)
+    self.fsm.states['cooldown'] = CooldownState('cooldown', 'ready', projectile_info['cooldown'])
+    self.fsm.states['ready'] = ReadyState('ready', 'attack')
+    self.fsm.states['attack'] = AttackState('attack', 'return')
+    self.fsm.states['return'] = ReturnState('return','cooldown')
+    self.fsm.current_state = self.fsm.states['ready']
 
-    # enemy interaction
-    self.can_attack = True
+    self.has_hit_sprite = False # integrate this into FSM somehow
 
-    # sounds
-    self.attack_sound = pygame.mixer.Sound(projectile_info['attack_sound'])
+    # # sounds
+    # self.attack_sound = pygame.mixer.Sound(projectile_info['attack_sound'])
 
   def import_graphics(self,name):
-    self.animations = {'idle': [], 'attack': [], 'return': []}
+    self.animations = {'ready': [], 'attack': [], 'return': [], 'recharge': []}
     main_path = f'graphics/projectiles/{name}/'
     for animation in self.animations.keys():
       self.animations[animation] = import_folder(main_path + animation)
 
-  def get_distance_direction_to_sprite(self, sprite):
-    '''
-    Get distance and direction to another sprite
-    '''
-    own_vector = pygame.math.Vector2(self.rect.center)
-    other_vector = pygame.math.Vector2(sprite.rect.center)
-    distance = (other_vector - own_vector).magnitude()
-
-    if distance > 0:
-      direction = (other_vector - own_vector).normalize()
-    else:
-      direction = pygame.math.Vector2()
-    return (distance,direction)
-
-  def get_closest_sprite_from_list(self, sprite_list):
-    '''
-    Return distance, direction and sprite of the closest sprite in list of sprite
-    '''
-    min_distance = 100000
-    distance = min_distance
-    closest_sprite = None
-    for sprite in sprite_list:
-      distance, direction = self.get_distance_direction_to_sprite(sprite)
-      if distance < min_distance:
-        min_distance = distance
-        closest_sprite = sprite
-
-    return distance, direction, closest_sprite
-
-
   def flicker(self):
+    # Overwrite to disable flickering for projectiles
     pass
-  
-  def cooldowns(self):
-    '''
-    count down in cooldowns
-    '''
-    current_time = pygame.time.get_ticks()
-
-    if not self.can_attack:
-      if current_time - self.return_time >= self.return_cooldown:
-        self.can_attack = True
-  
-  def queue_at_player(self,player):
-    '''
-    Projectile is queing at player (circling around it)
-    '''
-    x_amplitude = 50
-    y_amplitude = 25
-    phase_shift = self.index * 360 / len(player.projectiles) * pi/180    
-    x = x_amplitude * sin((pygame.time.get_ticks()/500 + phase_shift))
-    y = y_amplitude * cos((pygame.time.get_ticks()/500 + phase_shift))
-
-    self.pos.x = player.rect.centerx + x
-    self.pos.y = player.rect.centery + y
-
-    self.rect.centerx = round(self.pos.x)
-    self.rect.centery = round(self.pos.y)
-
-  def move_to_sprite(self, target_sprite, player, returning, dt):
-    '''
-    Projectile moves towards target sprite.
-    Boolean for return speed
-    '''
-    speed = self.return_speed if returning else self.speed
-    direction = self.get_distance_direction_to_sprite(target_sprite)[1]
-    if direction.magnitude() != 0:
-        direction = direction.normalize()
-
-    self.pos.x  += direction.x * speed * player.stats['projectile_speed'] * dt * 60
-    self.pos.y += direction.y * speed * player.stats['projectile_speed'] * dt * 60
-
-    self.rect.centerx = round(self.pos.x)
-    self.rect.centery = round(self.pos.y)
 
   def hit_sprite(self,sprite):
-    # TODO: potentially check if it is the right target enemy
-    # for now, just any hit will suffice
-    # if sprite == self.target_enemy:
-    self.status = 'return'
+    self.has_hit_sprite = True
 
-  def get_status(self, player, enemies):
-    
-    # projectile is returning (first set on hit_sprite())
-    if self.status == 'return':
-      distance, _ = self.get_distance_direction_to_sprite(player)
-      if distance <= 50:
-        self.return_time = pygame.time.get_ticks()
-        self.can_attack = False
-        self.status = 'idle'
-    
-    # projectile is idle
-    elif self.status == 'idle':
+  def get_queuing_pos(self):
+    pos = pygame.math.Vector2()
+    x_amplitude = self.player.stats['projectile_queuing_radius']
+    y_amplitude = self.player.stats['projectile_queuing_radius'] / 2
+    # TODO: angular_velocity = # degree / s
+    phase_shift = self.index * 360 / len(self.player.projectiles) * pi/180    
+    x = x_amplitude * sin((self.dt_cumulative * pi * 2 + phase_shift))
+    y = y_amplitude * cos((self.dt_cumulative * pi * 2 + phase_shift))
 
-      # projectile is ready to attack (cooldown over)
-      if self.can_attack and len(enemies) > 0:
-        distance, _, closest_enemy = self.get_closest_sprite_from_list(enemies)
-        print(distance)
+    pos.x = self.player.pos.x + x
+    pos.y = self.player.pos.y + y
+    return pos 
 
-        # enemy is within distance
-        if distance <= self.range * player.stats['range']:
-          self.target_enemy = closest_enemy
-          self.status = 'attack'
+  def move(self, dt):
+    distance, direction = get_distance_direction_a_to_b(self.pos, self.target_pos)
 
-    # projectile is attacking and will do so until it hits something
-    elif self.status == 'attack':
-      self.status = 'attack'
-    
-    print(self.index,self.status, self.can_attack)
-    
-  def actions(self, player, dt):
-    # This is necessary because target enemy might disappear before actions are called!
-    if self.target_enemy:
-      if len(self.target_enemy.groups()) < 2:
-        self.target_enemy = None
-        self.status = 'return'
-    
-    if self.status == 'attack':    
-      # self.attack_sound.play()
-      self.attack_time = pygame.time.get_ticks()
-      self.move_to_sprite(self.target_enemy, player, False, dt)
+    # print(f'{self.fsm.current_state.name}: moving from {self.pos} to {self.target_pos} (distance: {distance}) at speed {self.speed * dt * 60}')
 
-    elif self.status == 'idle':
-      self.queue_at_player(player)
-    elif self.status == 'return':
-      self.move_to_sprite(player, player, True, dt)
+    if distance <= (direction * self.speed * dt * 60).magnitude():
+      self.pos = self.target_pos
+
+    else:
+      self.pos -= direction * self.speed * dt * 60
+
+    self.rect.centerx = round(self.pos.x)
+    self.rect.centery = round(self.pos.y)
 
   def update(self, dt, actions):
     self.animate(dt)
-    self.cooldowns()
-
-  def projectile_update(self, player, enemies, dt, actions):
-    # TODO: Check why there is a delay at the beginning of the round
-    self.get_status(player, enemies)
-    self.actions(player, dt)
+    
+  def projectile_update(self, dt, cumulative_dt, actions):
+    self.dt_cumulative = cumulative_dt
+    self.fsm.execute(dt,actions)
+    self.move(dt)
 

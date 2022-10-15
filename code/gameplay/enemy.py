@@ -134,7 +134,7 @@ class Enemy(Entity):
 
   def update(self, dt, actions):
     self.hit_reaction()
-    # self.move(dt,self.speed)
+    self.move(dt,self.speed)
     self.animate(dt)
     self.cooldowns()
     self.check_death()
