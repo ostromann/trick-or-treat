@@ -91,18 +91,32 @@ class UI:
     self.display_surface.blit(text_surf, text_rect)
     pygame.draw.rect(self.display_surface, UI_BORDER_COLOR, text_rect.inflate(20,20),4)
 
+  def show_player_level(self,level):     
+    text_surf = self.font.render(f'lvl: {int(level)}', False, TEXT_COLOR)
+    x = self.display_w - 20
+    y = self.display_h - 40
+    text_rect = text_surf.get_rect(bottomright = (x,y))
+
+    pygame.draw.rect(self.display_surface, UI_BG_COLOR, text_rect.inflate(20,20))
+    self.display_surface.blit(text_surf, text_rect)
+    pygame.draw.rect(self.display_surface, UI_BORDER_COLOR, text_rect.inflate(20,20),4)
+
+  def show_level_ups(self,lvl_ups):
+    for i in range(lvl_ups):
+      x = 10 + i * ITEM_BOX_SIZE + i * 10
+      y = self.display_h - BAR_HEIGHT - 10 - ITEM_BOX_SIZE
+      lvl_up_rect = pygame.Rect(x,y,ITEM_BOX_SIZE,ITEM_BOX_SIZE)
+      pygame.draw.rect(self.display_surface, (255,0,0), lvl_up_rect)
+
+
 
   def display(self, player, seconds_left):
     self.show_bar(player.health, player.stats['health'], self.health_bar_rect,HEALTH_COLOR)
-    # self.show_bar(player.energy, player.stats['energy'], self.energy_bar_rect,ENERGY_COLOR)
-    self.show_bar(player.exp, 20, self.exp_bar_rect,EXP_COLOR)
-
-    # self.show_exp(player.exp)
+    self.show_bar(player.exp-player.previous_exp_threshold, player.next_exp_threshold-player.previous_exp_threshold, self.exp_bar_rect,EXP_COLOR)
+    self.show_player_level(player.level)
+    self.show_level_ups(player.level_ups)
     self.timer(seconds_left)
 
-    # self.weapon_overlay(player.weapon_index, player.switching_weapon)
-    # self.spell_overlay(player.spell_index, player.switching_spell)
-    # self.selection_box(80,635) # magic
     
 
   

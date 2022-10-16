@@ -28,10 +28,10 @@ def get_distance_direction_a_to_b(a, b):
   '''
   a = pygame.math.Vector2(a)
   b = pygame.math.Vector2(b)
-  distance = (a - b).magnitude()
+  distance = (b - a).magnitude()
 
   if distance > 0:
-    direction = (a - b).normalize()
+    direction = (b - a).normalize()
   else:
     direction = pygame.math.Vector2()
   return (distance,direction)

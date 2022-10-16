@@ -1,5 +1,6 @@
 import pygame, os
 from random import choice, randint
+from debug import debug
 
 from settings import *
 from states.state import State
@@ -46,7 +47,7 @@ class Game_World(State):
         self.magic_player = MagicPlayer(self.animation_player)
 
         # enemy spawn settings
-        self.enemy_nr = 64
+        self.enemy_nr = 12
         self.enemy_spawn_interval = 5000
         self.enemy_spawn_waves = 5
         self.enemy_waves_spawned = 0
@@ -57,6 +58,7 @@ class Game_World(State):
         # level settings
         self.level_start_time = pygame.time.get_ticks()
         self.level_duration = 30 * 1000
+        self.seconds_left = self.level_duration
 
     def create_map(self):
         layouts = {
@@ -112,12 +114,12 @@ class Game_World(State):
                         else:
                             target_sprite.get_damage(self.player,attack_sprite.sprite_type)
     
-    def player_collect_logic(self):
-        if self.collectible_sprites:
-            collision_sprites = pygame.sprite.spritecollide(self.player,self.collectible_sprites, False)
-            if collision_sprites:
-                for target_sprite in collision_sprites:
-                    self.player.collect(target_sprite)
+    # def player_collect_logic(self):
+    #     if self.collectible_sprites:
+    #         collision_sprites = pygame.sprite.spritecollide(self.player,self.collectible_sprites, False)
+    #         if collision_sprites:
+    #             for target_sprite in collision_sprites:
+    #                 self.player.collect(target_sprite)
 
     def damage_player(self,amount,attack_type):
         if self.player.vulnerable:
@@ -133,7 +135,7 @@ class Game_World(State):
         self.animation_player.create_particles(particle_type,pos,[self.visible_sprites])
 
     def trigger_xp_drop(self,pos,amount):
-        XP(pos, [self.visible_sprites, self.collectible_sprites], amount)
+        XP(pos, [self.visible_sprites, self.collectible_sprites], amount, self.player)
 
     def add_exp(self,amount):
         self.player.exp +=amount
@@ -170,8 +172,9 @@ class Game_World(State):
         current_time = pygame.time.get_ticks()
 
         if not self.can_spawn:
-                if current_time - self.enemy_spawn_time >= self.enemy_spawn_interval:
-                    self.can_spawn = True
+            if current_time - self.enemy_spawn_time >= self.enemy_spawn_interval:
+                self.can_spawn = True
+                print('cooldown over, can spawn again')
 
     def timer(self):
         current_time = pygame.time.get_ticks()
@@ -185,16 +188,20 @@ class Game_World(State):
         if actions["start"]:
             new_state = UpgradeMenu(self.game, self.player)
             new_state.enter_state()
-        if self.enemy_waves_spawned < self.enemy_spawn_waves:
+        if self.enemy_waves_spawned < self.enemy_spawn_waves and self.can_spawn:
+            print('spawn wave!')
             self.spawn_enemies()
             self.enemy_waves_spawned += 1
         self.visible_sprites.update(dt, actions)
         self.visible_sprites.enemy_update(self.player)
         self.visible_sprites.projectile_update(dt,self.cumulative_dt,actions)
+        self.visible_sprites.collectible_update(self.player,dt)
         self.player_attack_logic()
-        self.player_collect_logic()
+        # self.player_collect_logic()
+        self.enemy_spawn_cooldown()
       
     def render(self):
         self.visible_sprites.custom_draw(self.player)
-        self.ui.display(self.player, 0)
+        self.ui.display(self.player, self.seconds_left)
+        debug(f'{self.player.level}, {self.player.previous_exp_threshold}, {self.player.exp},  {self.player.next_exp_threshold}')
         

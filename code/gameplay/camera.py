@@ -45,3 +45,8 @@ class YSortCameraGroup(pygame.sprite.Group):
         for sprite in projectile_sprites:
             sprite.projectile_update(dt, cumulative_dt, actions)
 
+    def collectible_update(self,player,dt):
+        collectible_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, 'sprite_type') if sprite.sprite_type == 'collectible']
+        for sprite in collectible_sprites:
+            sprite.collectible_update(player,dt)
+

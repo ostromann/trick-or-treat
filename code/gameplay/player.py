@@ -25,36 +25,12 @@ class Player(Entity):
         self.attack_time = None
 
         # stats
-        self.stats = {
-            'health': 100, 
-            'energy': 60, 
-            'attack': 10,
-            'attack_factor': 1,
-            'speed': 10,
-            'range': 1,
-            'projectile_speed': 1,
-            'projectile_queuing_radius': 50,
-            }
-        self.max_stats = {
-            'health': 300, 
-            'energy': 140, 
-            'attack': 20,
-            'attack_factor': 2, 
-            'speed': 10,
-            'range': 1,
-            'projectile_speed': 1,
-            'projectile_queuing_radius': 200,
-            }
-        self.upgrade_costs = {
-            'health': 100, 
-            'energy': 100, 
-            'attack': 100,
-            'attack_factor': 100, 
-            'speed': 100,
-            'range': 100,
-            'projectile_speed': 100,
-            'projectile_queuing_radius': 100,
-            }
+        self.level = 1
+        self.level_ups = 0
+        self.previous_exp_threshold = 0
+        self.next_exp_threshold = BASE_EXP_THRESHOLD
+        self.stats = player_data[player_name]
+       
         self.health = self.stats['health']
         self.exp = 0
         self.speed = self.stats['speed']
@@ -66,6 +42,7 @@ class Player(Entity):
 
         # projectiles
         player_info = player_data[player_name]
+
         self.projectiles = []
         for projectile_name in player_info['projectiles']:
             self.projectiles.append(projectile_name)
@@ -75,7 +52,6 @@ class Player(Entity):
         self.animations = {
             'left': [], 'right': [],
             'left_idle': [], 'right_idle': [],
-            'left_attack': [], 'right_attack': [],
         }
         for animation in self.animations.keys():
             full_path = character_path + animation
@@ -126,10 +102,13 @@ class Player(Entity):
     def get_cost_by_index(self,index):
         return list(self.upgrade_costs.values())[index]
 
-    def collect(self, sprite):
-        print(f'collected {sprite.amount} exp')
-        self.exp += sprite.amount
-        sprite.kill()
+    def check_level_up(self):
+        # Linear progression curve
+        if self.exp >= self.next_exp_threshold:
+            self.previous_exp_threshold = self.next_exp_threshold
+            self.next_exp_threshold = self.previous_exp_threshold + self.level * BASE_EXP_INCREASE
+            self.level += 1
+            self.level_ups += 1
 
     def update(self, dt, actions):
         self.input(actions)
@@ -137,4 +116,8 @@ class Player(Entity):
         self.cooldowns()
         self.get_status(actions)
         self.animate(dt)
+        self.check_level_up()
+
+    
+
         

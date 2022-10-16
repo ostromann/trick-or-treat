@@ -12,9 +12,7 @@ class CooldownState(TimedState):
   
   def update(self,sprite,dt,actions):
     sprite.target_pos = sprite.get_queuing_pos()
-    self.check_expiry()
-    # print(f'{self.name}: {self.time_remaining} ms remaining...')
-    
+    self.check_expiry()    
     pass
 
 class ReadyState(State):
@@ -29,7 +27,6 @@ class ReadyState(State):
 
     if distance < sprite.range:
       self.done = True
-      # print(f'{self.name}: Update: Enemy in sight. State done!')
 
 class AttackState(State):
   def startup(self,sprite):
@@ -39,7 +36,6 @@ class AttackState(State):
       closest_enemy = get_closest_sprite_of_group(sprite, sprite.attackable_sprites)
       sprite.target_pos = closest_enemy.pos
     else:
-      # print(f'{self.nane}: No attackable sprites!')
       self.done = True
 
   def update(self,sprite,dt,actions):
@@ -55,9 +51,8 @@ class AttackState(State):
     
   def max_distance_reached(self, sprite):
     distance, _ = get_distance_direction_a_to_b(sprite.pos, sprite.player.pos)
-    margin = 50 #diamaeter of the players projectile queuing radius
+    margin = 50 # diamaeter of the players projectile queuing radius
     if distance >= sprite.range + margin:
-      # print(f'{self.name}: sprite has travelled far enough!')
       return True
     return False
 
@@ -83,7 +78,7 @@ class ReturnState(State):
     # check if projectile has reached player
     distance, _ = get_distance_direction_a_to_b(sprite.pos, sprite.player.pos)
 
-    margin = 50 #diamaeter of the players projectile queuing radius
+    margin = sprite.player.stats['projectile_queuing_radius']
     if distance <= margin:
       self.done = True
 
@@ -123,11 +118,11 @@ class Projectile(Entity):
     self.attack_type = projectile_info['attack_type']
 
     # FSM setup
-    self.fsm = EntityFSM(self, index)
-    self.fsm.states['cooldown'] = CooldownState('cooldown', 'ready', projectile_info['cooldown'])
-    self.fsm.states['ready'] = ReadyState('ready', 'attack')
-    self.fsm.states['attack'] = AttackState('attack', 'return')
-    self.fsm.states['return'] = ReturnState('return','cooldown')
+    self.fsm = EntityFSM(self)
+    self.fsm.states['cooldown'] = CooldownState('cooldown',projectile_info['cooldown'],next_state='ready')
+    self.fsm.states['ready'] = ReadyState('ready', next_state='attack')
+    self.fsm.states['attack'] = AttackState('attack', next_state='return')
+    self.fsm.states['return'] = ReturnState('return',next_state='cooldown')
     self.fsm.current_state = self.fsm.states['ready']
 
     self.has_hit_sprite = False # integrate this into FSM somehow
@@ -164,13 +159,11 @@ class Projectile(Entity):
   def move(self, dt):
     distance, direction = get_distance_direction_a_to_b(self.pos, self.target_pos)
 
-    # print(f'{self.fsm.current_state.name}: moving from {self.pos} to {self.target_pos} (distance: {distance}) at speed {self.speed * dt * 60}')
-
     if distance <= (direction * self.speed * dt * 60).magnitude():
       self.pos = self.target_pos
 
     else:
-      self.pos -= direction * self.speed * dt * 60
+      self.pos += direction * self.speed * dt * 60
 
     self.rect.centerx = round(self.pos.x)
     self.rect.centery = round(self.pos.y)

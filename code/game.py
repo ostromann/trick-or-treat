@@ -19,7 +19,7 @@ class Game():
 
         def game_loop(self):
             while self.playing:
-                time.sleep(0.01)
+                # time.sleep(0.01)
                 self.get_dt()
                 self.get_events()
                 self.update()
@@ -72,10 +72,10 @@ class Game():
             self.state_stack[-1].render()
             # Render current state to the screen
             # self.screen.blit(pygame.transform.scale(self.game_canvas,(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)), (0,0))
-            if self.dt == 0:
-                debug('inf')
-            else:
-                debug(int(1/self.dt))
+            # if self.dt == 0:
+            #     debug('inf')
+            # else:
+            #     debug(int(1/self.dt))
             pygame.display.flip()
 
         def get_dt(self):
