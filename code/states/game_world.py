@@ -47,7 +47,7 @@ class Game_World(State):
         self.magic_player = MagicPlayer(self.animation_player)
 
         # enemy spawn settings
-        self.enemy_nr = 12
+        self.enemy_nr = 5
         self.enemy_spawn_interval = 5000
         self.enemy_spawn_waves = 5
         self.enemy_waves_spawned = 0
@@ -113,13 +113,6 @@ class Game_World(State):
                             target_sprite.kill()
                         else:
                             target_sprite.get_damage(self.player,attack_sprite.sprite_type)
-    
-    # def player_collect_logic(self):
-    #     if self.collectible_sprites:
-    #         collision_sprites = pygame.sprite.spritecollide(self.player,self.collectible_sprites, False)
-    #         if collision_sprites:
-    #             for target_sprite in collision_sprites:
-    #                 self.player.collect(target_sprite)
 
     def damage_player(self,amount,attack_type):
         if self.player.vulnerable:
@@ -174,7 +167,6 @@ class Game_World(State):
         if not self.can_spawn:
             if current_time - self.enemy_spawn_time >= self.enemy_spawn_interval:
                 self.can_spawn = True
-                print('cooldown over, can spawn again')
 
     def timer(self):
         current_time = pygame.time.get_ticks()
@@ -189,7 +181,6 @@ class Game_World(State):
             new_state = UpgradeMenu(self.game, self.player)
             new_state.enter_state()
         if self.enemy_waves_spawned < self.enemy_spawn_waves and self.can_spawn:
-            print('spawn wave!')
             self.spawn_enemies()
             self.enemy_waves_spawned += 1
         self.visible_sprites.update(dt, actions)

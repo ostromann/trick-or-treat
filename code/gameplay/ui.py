@@ -14,6 +14,7 @@ class UI:
     self.energy_bar_rect = pygame.Rect(10,34,ENERGY_BAR_WIDTH,BAR_HEIGHT)
     self.exp_bar_rect = pygame.Rect(0,self.display_h - 20, self.display_w, 20)
     self.bar_overlay = pygame.image.load('graphics/misc/bar_alpha.png').convert_alpha()
+    self.lvl_up_image = pygame.transform.scale2x(pygame.image.load('graphics/misc/lvl_up.png').convert_alpha())
 
     # convert weapon dictionary
     self.weapon_graphics = []
@@ -106,7 +107,7 @@ class UI:
       x = 10 + i * ITEM_BOX_SIZE + i * 10
       y = self.display_h - BAR_HEIGHT - 10 - ITEM_BOX_SIZE
       lvl_up_rect = pygame.Rect(x,y,ITEM_BOX_SIZE,ITEM_BOX_SIZE)
-      pygame.draw.rect(self.display_surface, (255,0,0), lvl_up_rect)
+      self.display_surface.blit(self.lvl_up_image,lvl_up_rect)
 
 
 
