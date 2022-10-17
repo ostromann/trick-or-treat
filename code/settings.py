@@ -36,6 +36,16 @@ BAR_COLOR = '#EEEEEE'
 BAR_COLOR_SELECTED = '#111111'
 UPGRADE_BG_COLOR_SELECTED = '#EEEEEE'
 
+# damage indicator
+DAMAGE_INDICATOR_FONT = 'graphics/font/Silkscreen-Bold.ttf'
+DAMAGE_INDICATOR_TEXT_COLOR = 'white'
+DAMAGE_INDICATOR_FONT_SIZE = 20
+DAMAGE_INDICATOR_FADEOUT_TIME = 1.5
+
+DAMAGE_INDICATOR_CRIT_TEXT_COLOR = 'gold'
+DAMAGE_INDICATOR_CRIT_FONT_SIZE = 28
+DAMAGE_INDICATOR_CRIT_FADEOUT_TIME = 2.5
+
 # level up settings
 BASE_EXP_THRESHOLD = 5
 BASE_EXP_INCREASE = 10
@@ -46,13 +56,15 @@ player_data = {
 		'health': 100, 
 		'attack': 10,
 		'attack_factor': 1,
+		'crit_chance': 0.5,
+		'crit_damage': 1.5,
 		'speed': 10,
 		'range': 1,
 		'projectile_speed': 1,
 		'projectile_queuing_radius': 50,
 		'item_pull_range': 50,
 		'item_pull_force': 5,
-		'projectiles': ['candy','popcorn','candy']},
+		'projectiles': ['candy','popcorn']},
 }
 
 # weapons
@@ -78,6 +90,6 @@ monster_data = {
 
 # projectiles
 projectile_data = {
-	'candy': {'damage': 50, 'attack_type': 'slug', 'attack_sound': 'audio/attack/slash.wav', 'speed': 20, 'return_speed': 10, 'range': 300, 'cooldown': 400},
-	'popcorn': {'damage': 50, 'attack_type': 'slug', 'attack_sound': 'audio/attack/claw.wav', 'speed': 15, 'return_speed': 10, 'range': 300, 'cooldown': 200},
+	'candy': {'damage': 50, 'attack_type': 'slug', 'attack_sound': 'audio/attack/slash.wav', 'speed': 20, 'return_speed': 10, 'range': 300, 'cooldown': 200},
+	'popcorn': {'damage': 80, 'attack_type': 'slug', 'attack_sound': 'audio/attack/claw.wav', 'speed': 15, 'return_speed': 10, 'range': 300, 'cooldown': 600},
 }

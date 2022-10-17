@@ -8,6 +8,7 @@ from states.pause_menu import PauseMenu
 from states.upgrade_menu import UpgradeMenu
 from gameplay.camera import YSortCameraGroup
 from gameplay.collectibles import XP
+from gameplay.damage_indicator import DamageIndicator
 from gameplay.enemy import Enemy
 from gameplay.entity import Entity
 from gameplay.magic import MagicPlayer
@@ -45,6 +46,9 @@ class Game_World(State):
         # particles
         self.animation_player = AnimationPlayer()
         self.magic_player = MagicPlayer(self.animation_player)
+
+        # damage indicator
+        self.damage_indicator = DamageIndicator()
 
         # enemy spawn settings
         self.enemy_nr = 5
@@ -96,23 +100,10 @@ class Game_World(State):
                 collision_sprites = pygame.sprite.spritecollide(attack_sprite, self.attackable_sprites, False)
                 if collision_sprites:
                     for target_sprite in collision_sprites:
-                        target_sprite.get_damage(self.player,attack_sprite)
+                        (crit, damage)= target_sprite.get_damage(self.player,attack_sprite)
                         attack_sprite.hit_sprite(target_sprite)
-
-    def projectile_attack_logic(self):
-        if self.attack_sprites:
-            for attack_sprite in self.attack_sprites:
-                collision_sprites = pygame.sprite.spritecollide(attack_sprite, self.attackable_sprites, False)
-                if collision_sprites:
-                    for target_sprite in collision_sprites:
-                        if target_sprite.sprite_type == 'grass':
-                            pos = target_sprite.rect.center
-                            offset = pygame.math.Vector2(0,75)
-                            for leaf in range(randint(3,6)):
-                                self.animation_player.create_grass_particles(pos-offset, [self.visible_sprites])
-                            target_sprite.kill()
-                        else:
-                            target_sprite.get_damage(self.player,attack_sprite.sprite_type)
+                        if damage:
+                            self.damage_indicator.create_damage_indication(target_sprite.pos,[self.visible_sprites], damage, crit)
 
     def damage_player(self,amount,attack_type):
         if self.player.vulnerable:
@@ -120,6 +111,7 @@ class Game_World(State):
             self.player.vulnerable = False
             self.player.hit_time = pygame.time.get_ticks()
             self.animation_player.create_particles(attack_type, self.player.rect.center, [self.visible_sprites])
+            self.damage_indicator.create_damage_indication(self.player.pos,[self.visible_sprites], amount, False,'red')
 
     def trigger_death_particles(self,pos,particle_type):
         self.animation_player.create_particles(particle_type,pos,[self.visible_sprites])

@@ -32,7 +32,7 @@ class YSortCameraGroup(pygame.sprite.Group):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
             outline_rect = pygame.Rect(offset_pos[0],offset_pos[1],sprite.rect.width, sprite.rect.height)
-            pygame.draw.rect(self.display_surface,(255,0,0),outline_rect,2)
+            # pygame.draw.rect(self.display_surface,(255,0,0),outline_rect,2)
 
 
     def enemy_update(self,player):

@@ -1,4 +1,5 @@
 import pygame
+from random import random
 from gameplay.entity import Entity
 from gameplay.support import import_folder
 from settings import *
@@ -86,10 +87,14 @@ class Player(Entity):
 
 
     def get_full_projectile_damage(self, projectile):
+        crit = False
         base_damage = self.stats['attack']
         projectile_damage = projectile.damage * self.stats['attack_factor']
-        # print(f"hit!  {base_damage + projectile_damage} base_dmg: {base_damage}, projectile_dmg: {projectile.damage} * {self.stats['attack_factor']}")
-        return base_damage + projectile_damage
+        damage = base_damage + projectile_damage
+        if random() < self.stats['crit_chance']:
+            crit = True
+            damage = damage * self.stats['crit_damage']
+        return crit, damage
 
     def get_full_magic_damage(self):
         base_damage = self.stats['magic']

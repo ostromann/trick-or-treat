@@ -111,14 +111,15 @@ class Enemy(Entity):
   def get_damage(self, player, attack_sprite):
     if self.vulnerable:
       self.direction = self.get_player_distance_direction(player)[1]
-      if attack_sprite.sprite_type == 'projectile':
-        self.health -= player.get_full_projectile_damage(attack_sprite)
-      else:
-        self.health -= player.get_full_magic_damage()
+      crit, damage = player.get_full_projectile_damage(attack_sprite)
+      self.health -= damage
       # magic damage
       self.vulnerable = False
       self.hit_time = pygame.time.get_ticks()
       self.hit_sound.play()
+
+      return (crit, damage)
+    return (False, None)
 
   def check_death(self):
     if self.health <= 0:
