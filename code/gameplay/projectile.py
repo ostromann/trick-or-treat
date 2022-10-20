@@ -6,14 +6,10 @@ from gameplay.support import *
 from gameplay.entity import Entity
 from gameplay.entity_fsm import EntityFSM, State, TimedState
 
-class CooldownState(TimedState):
-  def cleanup(self,sprite):
-    pass
-  
+class CooldownState(TimedState): 
   def update(self,sprite,dt,actions):
     sprite.target_pos = sprite.get_queuing_pos()
     self.check_expiry()    
-    pass
 
 class ReadyState(State):
   def update(self,sprite,dt,actions):

@@ -7,7 +7,7 @@ from settings import *
 
 class Player(Entity):
     def __init__(self, player_name, pos, groups, obstacle_sprites):
-        super().__init__(groups)
+        super().__init__(groups, bouncy=True)
 
         # graphics setup
         self.import_player_assets()
@@ -15,10 +15,11 @@ class Player(Entity):
         self.image = self.animations[self.status][self.frame_index]
         
         # movement
-        self.rect = self.image.get_rect(topleft=pos)
+        self.rect = self.image.get_rect(topleft=pos) # topleft because this pos comes from the 64 64 gridworld in tiled
         self.pos = pygame.math.Vector2(self.rect.center)
+        self.hitbox = self.rect.inflate(-16,-16)
+        self.hitbox.center = self.pos
         self.obstacle_sprites = obstacle_sprites    
-        print(self.pos)   
 
         # control
         self.attacking = False

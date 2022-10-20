@@ -11,12 +11,18 @@ class EntityFSM:
     self.states = {} # dict of states
     self.current_state = None # current state
 
+  def set_state(self, state_name):
+    self.current_state.done = True
+    self.current_state.cleanup(self.sprite)
+    self.current_state = self.states[state_name]
+    self.current_state.done = False
+    self.current_state.startup(self.sprite)
+
+
   def execute(self,dt,actions):
     if self.current_state.done:
-      self.current_state.cleanup(self.sprite)
-      self.current_state = self.states[self.current_state.next_state]
-      self.current_state.done = False
-      self.current_state.startup(self.sprite)
+      self.set_state(self.current_state.next_state)
+  
     self.current_state.update(self.sprite,dt,actions)
 
 ##===================================

@@ -25,7 +25,8 @@ class AnimationPlayer:
 			'raccoon': import_folder('graphics/particles/raccoon'),
 			'spirit': import_folder('graphics/particles/nova'),
 			'bamboo': import_folder('graphics/particles/bamboo'),
-			'cauldron': import_folder('graphics/particles/smoke_orange'),
+			'cauldron': import_folder('graphics/particles/smoke2'),
+			'mushroom': import_folder('graphics/particles/smoke2'),
 			
 			# leafs 
 			'leaf': (

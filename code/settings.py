@@ -1,6 +1,6 @@
 # game setup
-WIDTH = 1280
-HEIGHT = 720
+WIDTH = 1920#1280
+HEIGHT = 1080#720
 FPS = 60
 TILESIZE = 64
 HITBOX_OFFSET = {
@@ -9,6 +9,10 @@ HITBOX_OFFSET = {
 	'grass': -10,
 	'invisible': 0}
 INPUT = 'ps4'
+
+# graphics
+STRETCH_SIZE = 6
+STRETCH_FREQUENCY = 100 #TODO: Convert to real frequency
 
 # ui 
 BAR_HEIGHT = 20
@@ -62,7 +66,7 @@ player_data = {
 		'range': 1,
 		'projectile_speed': 1,
 		'projectile_queuing_radius': 50,
-		'item_pull_range': 50,
+		'item_pull_range': 100,
 		'item_pull_force': 5,
 		'projectiles': ['candy','popcorn']},
 }
@@ -81,12 +85,37 @@ magic_data = {
 	'heal' : {'strength': 20,'cost': 10,'graphic':'graphics/particles/heal/heal.png'}}
 
 # enemy
+MONSTER_SPAWN_DURATION = 1.0
 monster_data = {
-	'cauldron': {'health': 120, 'exp': 1, 'damage': 40, 'attack_type': 'slash', 'attack_sound': 'audio/attack/slash.wav', 'speed':1, 'resistance': 6, 'attack_radius': 50, 'notice_radius': 300},
-	'squid': {'health': 100,'exp':100,'damage':20,'attack_type': 'slash', 'attack_sound':'audio/attack/slash.wav', 'speed': 3, 'resistance': 6, 'attack_radius': 80, 'notice_radius': 360},
-	'raccoon': {'health': 300,'exp':250,'damage':40,'attack_type': 'claw',  'attack_sound':'audio/attack/claw.wav','speed': 2, 'resistance': 6, 'attack_radius': 120, 'notice_radius': 400},
-	'spirit': {'health': 100,'exp':110,'damage':8,'attack_type': 'thunder', 'attack_sound':'audio/attack/fireball.wav', 'speed': 4, 'resistance': 6, 'attack_radius': 60, 'notice_radius': 350},
-	'bamboo': {'health': 70,'exp':120,'damage':6,'attack_type': 'leaf_attack', 'attack_sound':'audio/attack/slash.wav', 'speed': 3, 'resistance': 6, 'attack_radius': 50, 'notice_radius': 300}}
+	'cauldron': {
+		'health': 120, 
+		'exp': 1, 
+		'damage': 40, 
+		'attack_type': 'slash', 
+		'attack_sound': 
+		'audio/attack/slash.wav', 
+		'speed':1, 
+		'resistance': 6, 
+		'attack_radius': 50, 
+		'notice_radius': 300,
+		'precharge_duration': 0.3},
+	'mushroom': {
+		'health': 120, 
+		'exp': 1, 
+		'damage': 40, 
+		'attack_type': 'slash', 
+		'attack_sound': 
+		'audio/attack/slash.wav', 
+		'speed':1, 
+		'resistance': 6, 
+		'attack_radius': 50, 
+		'notice_radius': 300,
+		'precharge_duration': 0.3},
+	# 'squid': {'health': 100,'exp':100,'damage':20,'attack_type': 'slash', 'attack_sound':'audio/attack/slash.wav', 'speed': 3, 'resistance': 6, 'attack_radius': 80, 'notice_radius': 360},
+	# 'raccoon': {'health': 300,'exp':250,'damage':40,'attack_type': 'claw',  'attack_sound':'audio/attack/claw.wav','speed': 2, 'resistance': 6, 'attack_radius': 120, 'notice_radius': 400},
+	# 'spirit': {'health': 100,'exp':110,'damage':8,'attack_type': 'thunder', 'attack_sound':'audio/attack/fireball.wav', 'speed': 4, 'resistance': 6, 'attack_radius': 60, 'notice_radius': 350},
+	# 'bamboo': {'health': 70,'exp':120,'damage':6,'attack_type': 'leaf_attack', 'attack_sound':'audio/attack/slash.wav', 'speed': 3, 'resistance': 6, 'attack_radius': 50, 'notice_radius': 300}
+	}
 
 # projectiles
 projectile_data = {

@@ -22,7 +22,6 @@ from gameplay.ui import UI
 class Game_World(State):
     def __init__(self, game):
         State.__init__(self,game)
-
         self.cumulative_dt = 0
 
         # sprite group setup
@@ -41,18 +40,16 @@ class Game_World(State):
 
         # user interface
         self.ui = UI()
-        # self.upgrade = UpgradeMenu(self.game,self.player)
+        self.damage_indicator = DamageIndicator()
 
         # particles
         self.animation_player = AnimationPlayer()
         self.magic_player = MagicPlayer(self.animation_player)
 
-        # damage indicator
-        self.damage_indicator = DamageIndicator()
 
         # enemy spawn settings
-        self.enemy_nr = 5
-        self.enemy_spawn_interval = 5000
+        self.enemy_nr = 8
+        self.enemy_spawn_interval = 4000
         self.enemy_spawn_waves = 5
         self.enemy_waves_spawned = 0
         self.enemy_spawn_time = pygame.time.get_ticks()
@@ -136,7 +133,7 @@ class Game_World(State):
         self.enemy_spawn_cooldown()
         if self.can_spawn:
             for i in range(self.enemy_nr):
-                monster_name = choice(['cauldron'])
+                monster_name = choice(['cauldron','mushroom'])
                 x = randint(25,35) * TILESIZE
                 y = randint(15,25) * TILESIZE
 
@@ -186,5 +183,5 @@ class Game_World(State):
     def render(self):
         self.visible_sprites.custom_draw(self.player)
         self.ui.display(self.player, self.seconds_left)
-        debug(f'{self.player.level}, {self.player.previous_exp_threshold}, {self.player.exp},  {self.player.next_exp_threshold}')
+        # debug(f'{self.player.level}, {self.player.previous_exp_threshold}, {self.player.exp},  {self.player.next_exp_threshold}')
         

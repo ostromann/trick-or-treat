@@ -33,6 +33,10 @@ class PulledSoftState(State):
     margin = sprite.player.stats['item_pull_range']
     if distance <= margin:
       self.done = True
+    # TODO: Check if again out of reach, go back to previous state
+    # if distance > sprite.player.stats['item_pull_range'] * 2:
+    #   self.done = True
+    #   self.next_state = self.previous_state
 
 class PulledStrongState(State):
   def startup(self,sprite):
@@ -66,8 +70,8 @@ class Collectible(Entity):
     # FSM setup
     self.fsm = EntityFSM(self)
     self.fsm.states['dropped'] = DroppedState('dropped', next_state='pulled_soft')
-    self.fsm.states['pulled_soft'] = PulledSoftState('dropped', next_state='pulled_strong')
-    self.fsm.states['pulled_strong'] = PulledStrongState('pulled_strong', next_state='collected')
+    self.fsm.states['pulled_soft'] = PulledSoftState('dropped', next_state='pulled_strong', previous_state='dropped')
+    self.fsm.states['pulled_strong'] = PulledStrongState('pulled_strong', next_state='collected', previous_state='pulled_soft')
     self.fsm.states['collected'] = CollectedState('collected')
     self.fsm.current_state = self.fsm.states['dropped']
 

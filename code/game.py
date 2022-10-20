@@ -1,5 +1,6 @@
 import os, time, pygame
 # Load our scenes
+from settings import *
 from states.title import Title
 from debug import debug
 
@@ -7,7 +8,7 @@ class Game():
         def __init__(self):
             pygame.init()
             self.GAME_W,self.GAME_H = 480, 270
-            self.SCREEN_WIDTH,self.SCREEN_HEIGHT = 960, 540
+            self.SCREEN_WIDTH,self.SCREEN_HEIGHT = WIDTH, HEIGHT
             self.game_canvas = pygame.Surface((self.GAME_W,self.GAME_H))
             self.screen = pygame.display.set_mode((self.SCREEN_WIDTH,self.SCREEN_HEIGHT))
             self.running, self.playing = True, True
@@ -72,10 +73,10 @@ class Game():
             self.state_stack[-1].render()
             # Render current state to the screen
             # self.screen.blit(pygame.transform.scale(self.game_canvas,(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)), (0,0))
-            # if self.dt == 0:
-            #     debug('inf')
-            # else:
-            #     debug(int(1/self.dt))
+            if self.dt == 0:
+                debug('inf')
+            else:
+                debug(int(1/self.dt))
             pygame.display.flip()
 
         def get_dt(self):
