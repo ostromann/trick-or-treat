@@ -1,15 +1,64 @@
 from audioop import add
 import pygame
 
-from entity import Entity
+from gameplay.support import *
+from gameplay.entity import Entity
+from gameplay.entity_fsm import EntityFSM, TimedState, State
 from settings import *
-from support import *
+
+# TODO: Later
+# Not necessary right now!
+# class SpawnState(TimedState):
+#   def startup(self, sprite):
+#     sprite.vulnerable = False
+
+# class MoveState(State):
+#   def startup(self, sprite):
+#     sprite.speed = sprite.move_speed
+  
+#   def update(self, sprite, dt, actions):
+#     sprite.target_pos = sprite.player.pos
+#     self.check_done(sprite)
+
+#   def check_done(self, sprite):
+#     # check if enemy is within charging distance of player
+#     distance, _ = get_distance_direction_a_to_b(sprite.pos, sprite.player.pos)
+
+#     margin = sprite.stats['charge_radius']
+#     if distance <= margin:
+#       self.done = True
+
+# class PrechargeState(TimedState):
+#   def startup(self, sprite):
+#     pass
+#     # TODO:
+#     # player precharging sound
+  
+#   def update(self, sprite, dt, actions):
+#     sprite.target_pos = sprite.player.pos
+#     self.check_expiry()
+
+
+# class ChargeState(State):
+#   def startup(self, sprite):
+#     sprite.speed = sprite.charge_speed
+#     sprite.target_pos = sprite.player.pos
+  
+#   def update(self, sprite, dt, actions):
+#     # TODO: Add red outline to sprite
+
+#     if not self.done:
+#       self.check_done
+#       sprite.target_pos = sprite.player.pos
+  
+#   def cleanup(self, sprite):
+#     sprite.has_hit_sprite = False
 
 class Enemy(Entity):
   def __init__(self,monster_name,pos,groups,obstacle_sprites, damage_player, trigger_death_particles, add_exp, trigger_exp_drop):
     
     #general setup
-    super().__init__(groups)
+    super().__init__(groups,bouncy=True)
     self.sprite_type = 'enemy'
 
     # graphics setup
@@ -19,12 +68,15 @@ class Enemy(Entity):
 
     # movement
     self.rect = self.image.get_rect(topleft = pos)
-    self.hitbox = self.rect.inflate(0,-10)
+    self.pos = pygame.math.Vector2(self.rect.center)
     self.obstacle_sprites = obstacle_sprites
+    self.hitbox = self.rect.inflate(-16,-16)
+    self.hitbox.center = self.pos
 
     # stats
     self.monster_name = monster_name
     monster_info = monster_data[self.monster_name]
+    self.stats = monster_info
     self.health = monster_info['health']
     self.exp = monster_info['exp']
     self.speed = monster_info['speed']
@@ -55,6 +107,15 @@ class Enemy(Entity):
     self.death_sound.set_volume(0)#0.3)
     self.hit_sound.set_volume(0)#0.3)
     self.attack_sound.set_volume(0)#0.3)
+
+    # FSM setup
+    # TODO: LAter
+    # self.fsm = EntityFSM(self)
+    # self.fsm.states['spawn'] = SpawnState('spawn',MONSTER_SPAWN_DURATION,next_state='move')
+    # self.fsm.states['move'] = MoveState('move', next_state='precharge')
+    # self.fsm.states['precharge'] = SpawnState('spawn',self.stats['precharge_duration'],next_state='precharge')
+    # self.fsm.states['charge'] = ChargeState('charge', next_state='move')
+    # self.fsm.current_state = self.fsm.states['spawn']
 
 
   def import_graphics(self,name):
@@ -97,26 +158,6 @@ class Enemy(Entity):
     else:
       self.direction = pygame.math.Vector2()
 
-  def animate(self):
-    animation = self.animations[self.status]
-
-    # loop over the frame_index
-    self.frame_index += self.animation_speed
-    if self.frame_index >= len(animation):
-      if self.status == 'attack':
-        self.can_attack = False
-      self.frame_index = 0
-
-    # set the image
-    self.image = animation[int(self.frame_index)]
-    self.rect = self.image.get_rect(center = self.hitbox.center)
-
-    if not self.vulnerable:
-      alpha = self.wave_value()
-      self.image.set_alpha(alpha)
-    else:
-      self.image.set_alpha(255)
-
   def cooldowns(self):
     current_time = pygame.time.get_ticks()
 
@@ -131,14 +172,15 @@ class Enemy(Entity):
   def get_damage(self, player, attack_sprite):
     if self.vulnerable:
       self.direction = self.get_player_distance_direction(player)[1]
-      if attack_sprite.sprite_type == 'projectile':
-        self.health -= player.get_full_projectile_damage(attack_sprite)
-      else:
-        self.health -= player.get_full_magic_damage()
+      crit, damage = player.get_full_projectile_damage(attack_sprite)
+      self.health -= damage
       # magic damage
       self.vulnerable = False
       self.hit_time = pygame.time.get_ticks()
       self.hit_sound.play()
+
+      return (crit, damage)
+    return (False, None)
 
   def check_death(self):
     if self.health <= 0:
@@ -152,10 +194,10 @@ class Enemy(Entity):
     if not self.vulnerable:
       self.direction *= -self.resistance
 
-  def update(self):
+  def update(self, dt, actions):
     self.hit_reaction()
-    self.move(self.speed)
-    self.animate()
+    self.move(dt,self.speed)
+    self.animate(dt)
     self.cooldowns()
     self.check_death()
 

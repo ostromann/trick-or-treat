@@ -17,8 +17,8 @@ class YSortCameraGroup(pygame.sprite.Group):
 
     def center_target_camera(self, target):
         # Camera following player
-        self.offset.x = target.rect.centerx - self.half_w
-        self.offset.y = target.rect.centery - self.half_h
+        self.offset.x = target.pos.x - self.half_w#target.rect.centerx - self.half_w
+        self.offset.y = target.pos.y - self.half_h#target.rect.centery - self.half_h
 
     def custom_draw(self, player):
         self.center_target_camera(player)
@@ -29,17 +29,38 @@ class YSortCameraGroup(pygame.sprite.Group):
 
         # active elements
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
+            # draw shadow
+            self.draw_shadow(sprite)
+
+            # draw sprite
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
+
+            # draw outline rect for debugging
+            # outline_rect = pygame.Rect(offset_pos[0],offset_pos[1],sprite.rect.width, sprite.rect.height)
+            # pygame.draw.rect(self.display_surface,(255,0,0),outline_rect,2)
+
+    def draw_shadow(self, sprite):
+        pass
+    #TODO:
+        # offset_pos = sprite.rect.topleft - self.offset
+        # shadow_rect = (offset_pos[0],offset_pos[1] + sprite.rect.height*0.95, sprite.rect.width, sprite.rect.height * 0.1)
+        # pygame.draw.ellipse(self.display_surface,(60,60,60,128), shadow_rect)
+
+
 
     def enemy_update(self,player):
         enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, 'sprite_type') if sprite.sprite_type == 'enemy']
         for sprite in enemy_sprites:
             sprite.enemy_update(player)
 
-    def projectile_update(self,player):
+    def projectile_update(self,dt,cumulative_dt,actions):
         projectile_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, 'sprite_type') if sprite.sprite_type == 'projectile']
-        enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, 'sprite_type') if sprite.sprite_type == 'enemy']
         for sprite in projectile_sprites:
-            sprite.projectile_update(player,enemy_sprites)
+            sprite.projectile_update(dt, cumulative_dt, actions)
+
+    def collectible_update(self,player,dt):
+        collectible_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, 'sprite_type') if sprite.sprite_type == 'collectible']
+        for sprite in collectible_sprites:
+            sprite.collectible_update(player,dt)
 
